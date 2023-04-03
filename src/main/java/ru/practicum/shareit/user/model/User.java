@@ -2,6 +2,8 @@ package ru.practicum.shareit.user.model;
 
 import lombok.Builder;
 import lombok.Data;
+import ru.practicum.shareit.user.dto.UserDto;
+
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -19,4 +21,12 @@ public class User {
     @NotBlank(message = "Email cannot be blank")
     @Email(message = "Invalid email format")
     private String email;
+
+    public static User toUser(UserDto userDto) {
+        return User.builder()
+                .id(userDto.getId())
+                .name(userDto.getName())
+                .email(userDto.getEmail()).build();
+    }
 }
+
