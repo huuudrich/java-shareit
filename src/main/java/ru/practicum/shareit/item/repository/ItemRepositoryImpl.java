@@ -27,7 +27,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     @Override
     public Item addItem(Item item, Long userId) {
         if (!mapUsers().containsKey(userId)) {
-            throw new NotFoundException("User not found with id: " + userId);
+            throw new NotFoundException(String.format("User not found with id: %d", userId));
         }
         item.setOwner(mapUsers().get(userId));
         long newId = idCounter.getAndIncrement();
@@ -44,7 +44,7 @@ public class ItemRepositoryImpl implements ItemRepository {
             items.put(itemId, item);
             return item;
         } else {
-            throw new NotFoundException("User or Item not found with userId: " + userId + " itemId: " + itemId);
+            throw new NotFoundException(String.format("User or Item not found with userId: %d, itemId: %d", userId, itemId));
         }
     }
 
@@ -53,14 +53,14 @@ public class ItemRepositoryImpl implements ItemRepository {
         if (items.containsKey(itemId) && mapUsers().containsKey(userId)) {
             return items.get(itemId);
         } else {
-            throw new NotFoundException("Item not found with id: " + itemId);
+            throw new NotFoundException(String.format("Item not found with id: %d", itemId));
         }
     }
 
     @Override
     public List<Item> getAllItemsWithUser(Long userId) {
         if (!mapUsers().containsKey(userId)) {
-            throw new NotFoundException("User not found with id: " + userId);
+            throw new NotFoundException(String.format("User not found with id: %d", userId));
         }
         return items.values().stream()
                 .filter(item -> item.getOwner().getId().equals(userId))

@@ -19,6 +19,7 @@ import java.util.List;
 public class ItemController {
 
     private final ItemService itemService;
+    private final String xSharerUserId = "X-Sharer-User-Id";
 
     @Autowired
     public ItemController(ItemService itemService) {
@@ -26,22 +27,22 @@ public class ItemController {
     }
 
     @PostMapping
-    public Item addItem(@Valid @RequestBody Item item, @Positive @RequestHeader("X-Sharer-User-Id") Long userId) {
+    public Item addItem(@Valid @RequestBody Item item, @Positive @RequestHeader(xSharerUserId) Long userId) {
         return itemService.addItem(item, userId);
     }
 
     @PatchMapping("{itemId}")
-    public Item updateItem(@PathVariable @Positive Long itemId, @Valid @RequestBody ItemDto itemDto, @Positive @RequestHeader("X-Sharer-User-Id") Long userId) {
+    public Item updateItem(@PathVariable @Positive Long itemId, @Valid @RequestBody ItemDto itemDto, @Positive @RequestHeader(xSharerUserId) Long userId) {
         return itemService.updateItem(itemId, Item.toItem(itemDto), userId);
     }
 
     @GetMapping("{itemId}")
-    public Item getItem(@PathVariable @Positive Long itemId, @Positive @RequestHeader("X-Sharer-User-Id") Long userId) {
+    public Item getItem(@PathVariable @Positive Long itemId, @Positive @RequestHeader(xSharerUserId) Long userId) {
         return itemService.getItem(itemId, userId);
     }
 
     @GetMapping
-    public List<Item> getAllItemsWithUser(@Positive @RequestHeader("X-Sharer-User-Id") Long userId) {
+    public List<Item> getAllItemsWithUser(@Positive @RequestHeader(xSharerUserId) Long userId) {
         return itemService.getAllItemsWithUser(userId);
     }
 

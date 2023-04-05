@@ -53,7 +53,7 @@ public class UserRepositoryImpl implements UserRepository {
             user.setId(userId);
             return user;
         } else {
-            throw new NotFoundException("User not found with id: " + userId);
+            throw new NotFoundException(String.format("User not found with id: %d", userId));
         }
     }
 
@@ -62,7 +62,7 @@ public class UserRepositoryImpl implements UserRepository {
         if (users.containsKey(userId)) {
             users.remove(userId);
         } else {
-            throw new NotFoundException("User not found with id: " + userId);
+            throw new NotFoundException(String.format("User not found with id: %d", userId));
         }
     }
 
@@ -71,7 +71,7 @@ public class UserRepositoryImpl implements UserRepository {
         if (users.containsKey(userId)) {
             return users.get(userId);
         } else {
-            throw new NotFoundException("User not found with id: " + userId);
+            throw new NotFoundException(String.format("User not found with id: %d", userId));
         }
     }
 
