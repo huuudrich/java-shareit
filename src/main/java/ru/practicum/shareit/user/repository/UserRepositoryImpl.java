@@ -10,12 +10,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Repository
 @Slf4j
 public class UserRepositoryImpl implements UserRepository {
-    private final HashMap<Long, User> users;
+    private final Map<Long, User> users;
     private final AtomicLong idCounter;
 
     public UserRepositoryImpl() {
@@ -79,8 +80,14 @@ public class UserRepositoryImpl implements UserRepository {
         return new ArrayList<>(users.values());
     }
 
+    @Override
+    public Map<Long, User> getMapUsers() {
+        return users;
+    }
+
     private Boolean findByEmail(String email) {
         return users.values().stream()
                 .anyMatch(user -> user.getEmail().equalsIgnoreCase(email));
     }
+
 }

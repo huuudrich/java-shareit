@@ -4,6 +4,7 @@ import ru.practicum.shareit.exception.DuplicateEmailFoundException;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
+import java.util.Map;
 
 public interface UserRepository {
 
@@ -16,4 +17,6 @@ public interface UserRepository {
     User getUser(Long userId);
 
     List<User> getAllUsers();
+
+    Map<Long, User> getMapUsers();
 }

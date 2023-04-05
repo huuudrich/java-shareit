@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.model;
 
 import lombok.Builder;
 import lombok.Data;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
@@ -18,13 +19,24 @@ public class Item {
     @Size(min = 1, max = 100, message = "Name should be between 1 and 100 characters")
     private String name;
 
+    @NotBlank(message = "Description cannot be blank")
     @Size(max = 500, message = "Description should be at most 500 characters")
     private String description;
 
+    @NotNull(message = "available cannot be null")
     private Boolean available;
 
-    @NotNull(message = "Owner cannot be null")
     private User owner;
 
     private ItemRequest request;
+
+    public static Item toItem(ItemDto itemDto) {
+        return Item.builder()
+                .id(itemDto.getId())
+                .name(itemDto.getName())
+                .available(itemDto.getAvailable())
+                .description(itemDto.getDescription())
+                .owner(itemDto.getOwner())
+                .request(itemDto.getRequest()).build();
+    }
 }
