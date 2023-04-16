@@ -1,16 +1,17 @@
-package ru.practicum.shareit.booking.dto;
+package ru.practicum.shareit.booking.model;
 
+import lombok.Builder;
 import lombok.Data;
-import ru.practicum.shareit.booking.model.StatusBooking;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
-import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotNull;
 import java.time.ZonedDateTime;
+import javax.validation.constraints.FutureOrPresent;
 
 @Data
-public class BookingDto {
+@Builder
+public class Booking {
     private Long id;
 
     @FutureOrPresent(message = "Start date must be in the future or present")
