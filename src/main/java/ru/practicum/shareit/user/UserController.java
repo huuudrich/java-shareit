@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -10,7 +11,7 @@ import ru.practicum.shareit.exception.DuplicateEmailFoundException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.service.UserServiceImpl;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
@@ -20,41 +21,36 @@ import java.util.List;
 @RequestMapping(path = "/users")
 @Validated
 public class UserController {
-    private final UserService userService;
+    private final UserServiceImpl userServiceImpl;
 
     @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
+    public UserController(UserServiceImpl userServiceImpl) {
+        this.userServiceImpl = userServiceImpl;
     }
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) throws DuplicateEmailFoundException {
-        return userService.createUser(user);
+        return userServiceImpl.createUser(user);
     }
 
     @PatchMapping("{userId}")
     public User updateUser(@PathVariable @Positive Long userId, @Valid @RequestBody UserDto userDto) throws DuplicateEmailFoundException {
-        return userService.updateUser(userId, User.toUser(userDto));
+        return userServiceImpl.updateUser(userId, User.toUser(userDto));
     }
 
     @DeleteMapping("{userId}")
     public void deleteUser(@PathVariable @Positive Long userId) {
-        userService.deleteUser(userId);
+        userServiceImpl.deleteUser(userId);
     }
 
     @GetMapping("{userId}")
     public User getUser(@PathVariable @Positive Long userId) {
-        return userService.getUser(userId);
+        return userServiceImpl.getUser(userId);
     }
 
     @GetMapping
     public List<User> getAllUsers() {
-        return userService.getAllUsers();
-    }
-
-    @ExceptionHandler
-    public ResponseEntity<String> handleCustomEmailException(DuplicateEmailFoundException e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        return userServiceImpl.getAllUsers();
     }
 
     @ExceptionHandler
@@ -65,6 +61,11 @@ public class UserController {
 
     @ExceptionHandler
     public ResponseEntity<String> handleCustomNotFoundException(NotFoundException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<String> handleCustomEmptyResultDataAccessException(EmptyResultDataAccessException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 

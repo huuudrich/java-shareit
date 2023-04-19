@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS bookings
     id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     start_date TIMESTAMP WITHOUT TIME ZONE,
     end_date   TIMESTAMP WITHOUT TIME ZONE,
-    item_id    BOOLEAN,
+    item_id    BIGINT,
     booker_id  BIGINT,
     status     BOOLEAN,
     FOREIGN KEY (booker_id) REFERENCES users (id),

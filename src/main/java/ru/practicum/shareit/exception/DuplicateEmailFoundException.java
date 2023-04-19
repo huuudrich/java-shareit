@@ -1,6 +1,8 @@
 package ru.practicum.shareit.exception;
 
-public class DuplicateEmailFoundException extends Throwable {
+import org.springframework.dao.DataIntegrityViolationException;
+
+public class DuplicateEmailFoundException extends DataIntegrityViolationException {
     public DuplicateEmailFoundException(String message) {
         super(message);
     }

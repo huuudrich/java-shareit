@@ -9,6 +9,7 @@ import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Repository
@@ -81,7 +82,9 @@ public class ItemRepositoryImpl implements ItemRepository {
     }
 
     private Map<Long, User> mapUsers() {
-        return userRepository.getMapUsers();
+        List<User> usersList = userRepository.findAll();
+        Map<Long, User> usersMap = usersList.stream().collect(Collectors.toMap(User::getId, Function.identity()));
+        return usersMap;
     }
 
     private void setFields(Item item, Long itemId) {

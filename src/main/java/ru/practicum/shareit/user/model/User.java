@@ -1,17 +1,27 @@
 package ru.practicum.shareit.user.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.practicum.shareit.user.dto.UserDto;
 
 
+import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 @Data
 @Builder
+@Entity
+@Table(name = "users", schema = "public")
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank(message = "Name cannot be blank")
@@ -20,6 +30,7 @@ public class User {
 
     @NotBlank(message = "Email cannot be blank")
     @Email(message = "Invalid email format")
+    @Column(name = "email", unique = true, nullable = false)
     private String email;
 
     public static User toUser(UserDto userDto) {
