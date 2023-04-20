@@ -1,14 +1,8 @@
 package ru.practicum.shareit.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.exception.DuplicateEmailFoundException;
-import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserServiceImpl;
@@ -29,12 +23,12 @@ public class UserController {
     }
 
     @PostMapping
-    public User createUser(@Valid @RequestBody User user) throws DuplicateEmailFoundException {
+    public UserDto createUser(@Valid @RequestBody User user) {
         return userServiceImpl.createUser(user);
     }
 
     @PatchMapping("{userId}")
-    public User updateUser(@PathVariable @Positive Long userId, @Valid @RequestBody UserDto userDto) throws DuplicateEmailFoundException {
+    public UserDto updateUser(@PathVariable @Positive Long userId, @Valid @RequestBody UserDto userDto){
         return userServiceImpl.updateUser(userId, User.toUser(userDto));
     }
 
@@ -44,12 +38,12 @@ public class UserController {
     }
 
     @GetMapping("{userId}")
-    public User getUser(@PathVariable @Positive Long userId) {
+    public UserDto getUser(@PathVariable @Positive Long userId) {
         return userServiceImpl.getUser(userId);
     }
 
     @GetMapping
-    public List<User> getAllUsers() {
+    public List<UserDto> getAllUsers() {
         return userServiceImpl.getAllUsers();
     }
 
