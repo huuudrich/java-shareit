@@ -53,20 +53,4 @@ public class UserController {
         return userServiceImpl.getAllUsers();
     }
 
-    @ExceptionHandler
-    public ResponseEntity<String> handleCustomValidationException(MethodArgumentNotValidException e) {
-        String message = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
-    }
-
-    @ExceptionHandler
-    public ResponseEntity<String> handleCustomNotFoundException(NotFoundException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-    }
-
-    @ExceptionHandler
-    public ResponseEntity<String> handleCustomEmptyResultDataAccessException(EmptyResultDataAccessException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-    }
-
 }

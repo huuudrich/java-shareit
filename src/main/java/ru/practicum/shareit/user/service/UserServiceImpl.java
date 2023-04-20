@@ -22,12 +22,7 @@ public class UserServiceImpl {
 
     public User createUser(User user) {
         log.info("Creating user with email: {}", user.getEmail());
-        try {
-            return userRepository.save(user);
-        } catch (Throwable e) {
-            log.error("Email {} is already use", user.getEmail());
-            throw e;
-        }
+        return userRepository.save(user);
     }
 
     public User updateUser(Long userId, User user) {
@@ -35,13 +30,17 @@ public class UserServiceImpl {
         if (!userRepository.existsById(userId)) {
             throw new EntityNotFoundException(String.format("User with id %d not found", userId));
         }
-        try {
-            user.setId(userId);
-            return userRepository.save(user);
-        } catch (Throwable e) {
-            log.error("Error with server");
-            throw e;
+
+        User existingUser = getUser(userId);
+
+        if (user.getEmail() != null) {
+            existingUser.setEmail(user.getEmail());
         }
+        if (user.getName() != null) {
+            existingUser.setName(user.getName());
+        }
+
+        return userRepository.save(existingUser);
     }
 
     public void deleteUser(Long userId) {
@@ -56,7 +55,8 @@ public class UserServiceImpl {
 
     public User getUser(Long userId) {
         log.info("Getting user with id: {}", userId);
-        return userRepository.getReferenceById(userId);
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("User with id %d not found", userId)));
     }
 
     public List<User> getAllUsers() {
