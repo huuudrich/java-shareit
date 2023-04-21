@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS bookings
     end_date   TIMESTAMP WITHOUT TIME ZONE,
     item_id    BIGINT,
     booker_id  BIGINT,
-    status     BOOLEAN,
+    status     VARCHAR(255),
     FOREIGN KEY (booker_id) REFERENCES users (id),
     FOREIGN KEY (item_id) REFERENCES items (id)
 );
