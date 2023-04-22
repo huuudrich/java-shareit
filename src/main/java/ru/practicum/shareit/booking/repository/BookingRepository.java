@@ -15,16 +15,21 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     Optional<Booking> findByIdAndBookerIdOrOwnerId(Long bookingId, Long bookerIdOrOwnerId);
 
     @Query("select b from Booking b where b.booker.id = ?1 " +
-            "and now() < b.start " +
-            "and now() < b.end " +
+            "and current_timestamp < b.start " +
             "order by b.start")
-    List<Booking> findAllBookingsWithStateFuture(Long userId);
+    List<Booking> findAllBookingsByBookerWithStateFuture(Long userId);
 
     @Query("select b from Booking b where b.booker.id = ?1 " +
-            "and now() > b.start " +
-            "and now() > b.end " +
+            "and current_timestamp > b.start " +
+            "and current_timestamp > b.end " +
             "order by b.start")
-    List<Booking> findAllBookingsWithStatePast(Long userId);
+    List<Booking> findAllBookingsByBookerWithStatePast(Long userId);
+
+    @Query("select b from Booking b where b.booker.id = ?1 " +
+            "and current_timestamp < b.start " +
+            "and current_timestamp > b.end " +
+            "order by b.start")
+    List<Booking> findAllBookingsByBookerWithStateCurrent(Long userId);
 
     List<Booking> findAllByBookerIdOrderByStartDesc(Long userId);
 
@@ -37,4 +42,37 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "and b.status = 'REJECTED'" +
             "order by b.start")
     List<Booking> findAllByBookerAndStatusIsRejectedOrderByStartDesc(Long userId);
+
+    // OWNER
+    @Query("select b from Booking b where b.item.owner.id = ?1 " +
+            "and current_timestamp < b.start " +
+            "and current_timestamp < b.end " +
+            "order by b.start")
+    List<Booking> findAllBookingsByOwnerWithStateFuture(Long userId);
+
+    @Query("select b from Booking b where b.item.owner.id = ?1 " +
+            "and current_timestamp > b.start " +
+            "and current_timestamp > b.end " +
+            "order by b.start")
+    List<Booking> findAllBookingsByOwnerWithStatePast(Long userId);
+
+    @Query("select b from Booking b where b.item.owner.id = ?1 " +
+            "and current_timestamp < b.start " +
+            "and current_timestamp > b.end " +
+            "order by b.start")
+    List<Booking> findAllBookingsByOwnerWithStateCurrent(Long userId);
+
+    @Query("select b from Booking b where b.item.owner.id = ?1 " +
+            "order by b.start")
+    List<Booking> findAllByOwnerIdOrderByStartDesc(Long userId);
+
+    @Query("select b from Booking b where b.item.owner.id = ?1 " +
+            "and b.status = 'WAITING'" +
+            "order by b.start")
+    List<Booking> findAllByOwnerAndStatusIsWaitingOrderByStartDesc(Long userId);
+
+    @Query("select b from Booking b where b.item.owner.id = ?1 " +
+            "and b.status = 'REJECTED'" +
+            "order by b.start")
+    List<Booking> findAllByOwnerAndStatusIsRejectedOrderByStartDesc(Long userId);
 }

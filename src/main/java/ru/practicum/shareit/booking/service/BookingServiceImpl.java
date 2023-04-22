@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingMapper;
+import ru.practicum.shareit.booking.dto.BookingState;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.StatusBooking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
@@ -18,6 +19,7 @@ import ru.practicum.shareit.user.service.UserService;
 
 import javax.persistence.EntityNotFoundException;
 import java.nio.file.AccessDeniedException;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -52,7 +54,7 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.getReferenceById(bookingId);
         User user = User.toUser(userService.getUser(userId));
         Long userIdWithItem = booking.getItem().getOwner().getId();
-        if (Objects.equals(userIdWithItem, user.getId())) {
+        if (Objects.equals(userIdWithItem, user.getId()) || Objects.equals(userIdWithItem, booking.getBooker().getId())) {
             if (status = true) {
                 booking.setStatus(StatusBooking.APPROVED);
             }
@@ -70,4 +72,45 @@ public class BookingServiceImpl implements BookingService {
         return bookingRepository.findByIdAndBookerIdOrOwnerId(bookingId, bookerIdOrOwnerId)
                 .orElseThrow(() -> new EntityNotFoundException("Booking with id " + bookingId + " not found for user with id " + bookerIdOrOwnerId));
     }
+
+    @Override
+    public List<Booking> getAllBookingsByBooker(Long userId, BookingState state) {
+        userService.getUser(userId);
+        if (state == null) state = BookingState.ALL;
+        switch (state) {
+            case CURRENT:
+                return bookingRepository.findAllBookingsByBookerWithStateCurrent(userId);
+            case PAST:
+                return bookingRepository.findAllBookingsByBookerWithStatePast(userId);
+            case FUTURE:
+                return bookingRepository.findAllBookingsByBookerWithStateFuture(userId);
+            case WAITING:
+                return bookingRepository.findAllByBookerAndStatusIsWaitingOrderByStartDesc(userId);
+            case REJECTED:
+                return bookingRepository.findAllByBookerAndStatusIsRejectedOrderByStartDesc(userId);
+            default:
+                return bookingRepository.findAllByBookerIdOrderByStartDesc(userId);
+        }
+    }
+
+    @Override
+    public List<Booking> getAllBookingsByOwner(Long userId, BookingState state) {
+        userService.getUser(userId);
+        if (state == null) state = BookingState.ALL;
+        switch (state) {
+            case CURRENT:
+                return bookingRepository.findAllBookingsByOwnerWithStateCurrent(userId);
+            case PAST:
+                return bookingRepository.findAllBookingsByOwnerWithStatePast(userId);
+            case FUTURE:
+                return bookingRepository.findAllBookingsByOwnerWithStateFuture(userId);
+            case WAITING:
+                return bookingRepository.findAllByOwnerAndStatusIsWaitingOrderByStartDesc(userId);
+            case REJECTED:
+                return bookingRepository.findAllByOwnerAndStatusIsRejectedOrderByStartDesc(userId);
+            default:
+                return bookingRepository.findAllByOwnerIdOrderByStartDesc(userId);
+        }
+    }
+
 }

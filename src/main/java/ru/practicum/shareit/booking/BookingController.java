@@ -3,13 +3,14 @@ package ru.practicum.shareit.booking;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingState;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.service.BookingService;
-import ru.practicum.shareit.item.dto.ItemDto;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.nio.file.AccessDeniedException;
+import java.util.List;
 
 @RestController
 @RequestMapping(path = "/bookings")
@@ -35,6 +36,16 @@ public class BookingController {
                                                @Positive @RequestHeader(xSharerUserId) Long bookerIdOrOwnerId) {
         return bookingService.getBookingByIdForUserOrOwner(bookingId, bookerIdOrOwnerId);
     }
-    @GetMapping()
-    public
+
+    @GetMapping
+    public List<Booking> getAllBookingsWithBooker(@Positive @RequestHeader(xSharerUserId) Long bookerId,
+                                                  @RequestParam(name = "state", required = false) BookingState bookingState) {
+        return bookingService.getAllBookingsByBooker(bookerId, bookingState);
+    }
+
+    @GetMapping("/owner")
+    public List<Booking> getAllBookingsWithOwner(@Positive @RequestHeader(xSharerUserId) Long ownerId,
+                                                 @RequestParam(name = "state", required = false) BookingState bookingState) {
+        return bookingService.getAllBookingsByOwner(ownerId, bookingState);
+    }
 }
