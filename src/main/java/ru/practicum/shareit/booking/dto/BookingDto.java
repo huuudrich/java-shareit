@@ -2,10 +2,8 @@ package ru.practicum.shareit.booking.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-import ru.practicum.shareit.booking.annotation.ValidBookingDates;
 import ru.practicum.shareit.booking.annotation.ValidBookingDtoDates;
 import ru.practicum.shareit.booking.model.StatusBooking;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
 import javax.validation.constraints.FutureOrPresent;

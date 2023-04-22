@@ -1,6 +1,5 @@
 package ru.practicum.shareit.booking.annotation;
 
-import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.Booking;
 
 import javax.validation.ConstraintValidator;
