@@ -53,10 +53,10 @@ public class BookingServiceImpl implements BookingService {
         User user = User.toUser(userService.getUser(userId));
         Long userIdWithItem = booking.getItem().getOwner().getId();
         if (Objects.equals(userIdWithItem, user.getId()) || Objects.equals(userIdWithItem, booking.getBooker().getId())) {
-            if (status = true) {
+            if (status) {
                 booking.setStatus(StatusBooking.APPROVED);
             }
-            if (status = false) {
+            if (!status) {
                 booking.setStatus(StatusBooking.REJECTED);
             }
             return bookingRepository.save(booking);
