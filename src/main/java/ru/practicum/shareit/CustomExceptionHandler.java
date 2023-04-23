@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import ru.practicum.shareit.exceptions.ItemNotAvailableException;
 
 import javax.persistence.EntityNotFoundException;
@@ -17,9 +18,13 @@ import java.util.Map;
 @Slf4j
 public class CustomExceptionHandler {
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleException(Exception e) {
+    public ResponseEntity<Object> handleException(Exception e) {
         log.warn("Error with server: " + e.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error with server: " + e.getMessage());
+
+        Map<String, String> errorDetails = new HashMap<>();
+        errorDetails.put("message", "Error with server: " + e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorDetails);
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
@@ -45,8 +50,16 @@ public class CustomExceptionHandler {
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<String> handleAccessDeniedException(ItemNotAvailableException e) {
+    public ResponseEntity<String> handleItemNotAvailableException(AccessDeniedException e) {
         log.warn(e.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Object> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
+        String errorMessage = "Unknown state: " + e.getValue();
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("error", errorMessage);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMap);
     }
 }

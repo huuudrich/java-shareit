@@ -2,7 +2,12 @@ package ru.practicum.shareit.item.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.dto.BookingMapper;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.item.dto.ItemDetailsDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
@@ -11,6 +16,7 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import javax.persistence.EntityNotFoundException;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +26,7 @@ import java.util.List;
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
     private final ItemMapper itemMapper;
 
     public ItemDto addItem(Item item, Long userId) {
@@ -68,5 +75,25 @@ public class ItemServiceImpl implements ItemService {
             return new ArrayList<>();
         }
         return itemMapper.userListToDto(itemRepository.search(text));
+    }
+
+    public Object getItemDetails(Long itemId, Long userId) {
+        Item item = itemRepository.getReferenceById(itemId);
+        User user = userRepository.getReferenceById(userId);
+        ZonedDateTime now = ZonedDateTime.now();
+        Sort sortDesc = Sort.by("start").descending();
+
+        return constructItemDtoForOwner(user, now, sortDesc, item);
+    }
+
+    private ItemDetailsDto constructItemDtoForOwner(User owner, ZonedDateTime now, Sort sort, Item item) {
+        Booking lastBooking = bookingRepository.findAllByItemOwnerAndEndBefore(owner, now, sort)
+                .stream().findFirst().orElse(null);
+        Booking nextBooking = bookingRepository.findAllByItemOwnerAndStartAfter(owner, now, sort)
+                .stream().findFirst().orElse(null);
+
+        return itemMapper.itemDetailsDto(item,
+                BookingMapper.bookingInItemDto(lastBooking),
+                BookingMapper.bookingInItemDto(nextBooking));
     }
 }

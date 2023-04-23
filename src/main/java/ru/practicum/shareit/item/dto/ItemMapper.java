@@ -30,6 +30,18 @@ public class ItemMapper {
                 .build();
     }
 
+    public ItemDetailsDto itemDetailsDto(Item item, ItemDetailsDto.BookingInfo lastBooking,
+                                         ItemDetailsDto.BookingInfo nextBooking) {
+        return ItemDetailsDto.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(item.getAvailable())
+                .lastBooking(lastBooking)
+                .nextBooking(nextBooking)
+                .build();
+    }
+
     public List<ItemDto> userListToDto(List<Item> items) {
         List<ItemDto> itemsDto = new ArrayList<>();
         for (Item item : items) {

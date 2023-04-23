@@ -30,7 +30,7 @@ public class BookingServiceImpl implements BookingService {
     private final BookingMapper bookingMapper;
 
     @Override
-    public Booking createBooking(BookingDto bookingDto, Long userId) {
+    public Booking createBooking(BookingDto bookingDto, Long userId) throws AccessDeniedException {
         log.info("Adding booking with id: {} for user with id: {}", bookingDto.getId(), userId);
 
         Booking booking = bookingMapper.toBooking(bookingDto);
@@ -38,7 +38,10 @@ public class BookingServiceImpl implements BookingService {
         Long itemId = bookingDto.getItemId();
         Item item = Item.toItem(itemService.getItem(itemId, userId));
         User user = User.toUser(userService.getUser(userId));
-        if (item != null && user != null && item.getAvailable()) {
+        if (Objects.equals(item.getOwner().getId(), user.getId())) {
+            throw new AccessDeniedException("Cannot be created with the same id");
+        }
+        if (item.getAvailable()) {
             booking.setBooker(user);
             booking.setItem(item);
             booking.setStatus(StatusBooking.WAITING);
@@ -49,10 +52,15 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Booking setStatusForBookingByOwner(Long bookingId, Long userId, Boolean status) throws AccessDeniedException {
+        log.info("Setting status for booking with id: {} by user with id: {}", bookingId, userId);
         Booking booking = bookingRepository.getReferenceById(bookingId);
+        if (booking.getStatus().equals(StatusBooking.APPROVED)) {
+            throw new ItemNotAvailableException("Status already: APPROVED");
+        }
         User user = User.toUser(userService.getUser(userId));
         Long userIdWithItem = booking.getItem().getOwner().getId();
-        if (Objects.equals(userIdWithItem, user.getId()) || Objects.equals(userIdWithItem, booking.getBooker().getId())) {
+        if (Objects.equals(userIdWithItem, user.getId()) ||
+                Objects.equals(userIdWithItem, booking.getBooker().getId())) {
             if (status) {
                 booking.setStatus(StatusBooking.APPROVED);
             }
@@ -67,14 +75,18 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Booking getBookingByIdForUserOrOwner(Long bookingId, Long bookerIdOrOwnerId) {
+        log.info("Getting booking with id: {} for user or owner with id: {}", bookingId, bookerIdOrOwnerId);
         return bookingRepository.findByIdAndBookerIdOrOwnerId(bookingId, bookerIdOrOwnerId)
                 .orElseThrow(() -> new EntityNotFoundException("Booking with id " + bookingId + " not found for user with id " + bookerIdOrOwnerId));
     }
 
     @Override
     public List<Booking> getAllBookingsByBooker(Long userId, BookingState state) {
+        log.info("Getting all bookings by booker with id: {} and state: {}", userId, state);
         userService.getUser(userId);
-        if (state == null) state = BookingState.ALL;
+        if (state == null) {
+            state = BookingState.ALL;
+        }
         switch (state) {
             case CURRENT:
                 return bookingRepository.findAllBookingsByBookerWithStateCurrent(userId);
@@ -93,8 +105,11 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<Booking> getAllBookingsByOwner(Long userId, BookingState state) {
+        log.info("Getting all bookings by owner with id: {} and state: {}", userId, state);
         userService.getUser(userId);
-        if (state == null) state = BookingState.ALL;
+        if (state == null) {
+            state = BookingState.ALL;
+        }
         switch (state) {
             case CURRENT:
                 return bookingRepository.findAllBookingsByOwnerWithStateCurrent(userId);
@@ -110,5 +125,4 @@ public class BookingServiceImpl implements BookingService {
                 return bookingRepository.findAllByOwnerIdOrderByStartDesc(userId);
         }
     }
-
 }

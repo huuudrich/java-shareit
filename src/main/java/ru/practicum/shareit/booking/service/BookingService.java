@@ -8,7 +8,7 @@ import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 public interface BookingService {
-    Booking createBooking(BookingDto bookingDto, Long userId);
+    Booking createBooking(BookingDto bookingDto, Long userId) throws AccessDeniedException;
 
     Booking setStatusForBookingByOwner(Long bookingId, Long userId, Boolean status) throws AccessDeniedException;
 

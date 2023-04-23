@@ -20,7 +20,7 @@ public class BookingController {
     private final String xSharerUserId = "X-Sharer-User-Id";
 
     @PostMapping
-    public Booking createBooking(@Valid @RequestBody BookingDto bookingDto, @Positive @RequestHeader(xSharerUserId) Long userId) {
+    public Booking createBooking(@Valid @RequestBody BookingDto bookingDto, @Positive @RequestHeader(xSharerUserId) Long userId) throws AccessDeniedException {
         return bookingService.createBooking(bookingDto, userId);
     }
 
