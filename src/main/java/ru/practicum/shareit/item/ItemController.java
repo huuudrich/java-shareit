@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDetailsDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 
@@ -44,4 +45,8 @@ public class ItemController {
         return itemService.searchItem(text);
     }
 
+    @PostMapping("{itemId}/comment")
+    public Comment getComments(@PathVariable @Positive Long itemId, @Positive @RequestHeader(xSharerUserId) Long userId, @RequestBody String text) {
+        return itemService.addComment(itemId, userId, text);
+    }
 }

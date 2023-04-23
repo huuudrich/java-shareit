@@ -9,16 +9,18 @@ import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.item.dto.ItemDetailsDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import javax.persistence.EntityNotFoundException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -27,6 +29,7 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
     private final ItemMapper itemMapper;
 
     public ItemDto addItem(Item item, Long userId) {
@@ -35,6 +38,13 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
         item.setOwner(user);
         return itemMapper.toItemDto(itemRepository.save(item));
+    }
+
+    public Comment addComment(Long itemId, Long userId, String text) {
+        Item item = itemRepository.getReferenceById(itemId);
+        User author = userRepository.getReferenceById(userId);
+        Comment comment = new Comment(text, item, author, LocalDateTime.now());
+        return commentRepository.save(comment);
     }
 
     public ItemDto updateItem(Long itemId, Item item, Long userId) {
@@ -66,12 +76,12 @@ public class ItemServiceImpl implements ItemService {
 
     public List<ItemDetailsDto> getAllItemsWithUser(Long userId) {
         log.info("Getting all items for user with id: {}", userId);
-        List<ItemDetailsDto> itemDetails = new ArrayList<>();
-        for (Item item : itemRepository.findByOwnerId(userId)) {
-            itemDetails.add(constructItemDtoForOwner(item.getOwner(), item));
-        }
-        Collections.reverse(itemDetails);
-        return itemDetails;
+
+        List<Item> items = itemRepository.findByOwnerIdOrderByIdAsc(userId);
+
+        return items.stream()
+                .map(item -> constructItemDtoForOwner(item.getOwner(), item))
+                .collect(Collectors.toList());
     }
 
     public List<ItemDto> searchItem(String text) {

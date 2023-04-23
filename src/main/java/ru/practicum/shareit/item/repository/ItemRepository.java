@@ -10,7 +10,7 @@ import java.util.Optional;
 public interface ItemRepository extends JpaRepository<Item, Long> {
     Optional<Item> findByIdAndOwnerId(Long itemId, Long userId);
 
-    List<Item> findByOwnerId(Long userId);
+    List<Item> findByOwnerIdOrderByIdAsc(Long userId);
 
     @Query("select i from Item i " +
             "where (upper(i.name) like upper(concat('%', ?1, '%')) " +
