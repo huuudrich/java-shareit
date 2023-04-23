@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.user.model.User;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -79,8 +78,14 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "order by b.start DESC")
     List<Booking> findAllByOwnerAndStatusIsRejectedOrderByStartDesc(Long userId);
 
-    List<Booking> findAllByItemOwnerAndEndBefore(User owner, ZonedDateTime end, Sort sort);
+    @Query("select b from Booking b where b.item.owner.id = ?1 " +
+            "and b.item.id = ?2 " +
+            "order by b.start ASC")
+    List<Booking> findAllByItemOwnerAndEndBefore(Long userId, Long itemId);
 
-    List<Booking> findAllByItemOwnerAndStartAfter(User owner, ZonedDateTime start, Sort sort);
+    @Query("select b from Booking b where b.item.owner.id = ?1 " +
+            "and b.item.id = ?2 and b.start > ?3 " +
+            "order by b.start ASC")
+    List<Booking> findAllByItemOwnerAndStartAfter(Long userId, Long itemId, ZonedDateTime time);
 
 }

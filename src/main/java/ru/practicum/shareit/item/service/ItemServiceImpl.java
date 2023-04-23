@@ -2,7 +2,6 @@ package ru.practicum.shareit.item.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
@@ -16,8 +15,9 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import javax.persistence.EntityNotFoundException;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -64,9 +64,14 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new EntityNotFoundException("Item with id " + itemId + " not found for user with id " + userId)));
     }
 
-    public List<ItemDto> getAllItemsWithUser(Long userId) {
+    public List<ItemDetailsDto> getAllItemsWithUser(Long userId) {
         log.info("Getting all items for user with id: {}", userId);
-        return itemMapper.userListToDto(itemRepository.findByOwnerId(userId));
+        List<ItemDetailsDto> itemDetails = new ArrayList<>();
+        for (Item item : itemRepository.findByOwnerId(userId)) {
+            itemDetails.add(constructItemDtoForOwner(item.getOwner(), item));
+        }
+        Collections.reverse(itemDetails);
+        return itemDetails;
     }
 
     public List<ItemDto> searchItem(String text) {
@@ -80,17 +85,18 @@ public class ItemServiceImpl implements ItemService {
     public Object getItemDetails(Long itemId, Long userId) {
         Item item = itemRepository.getReferenceById(itemId);
         User user = userRepository.getReferenceById(userId);
-        ZonedDateTime now = ZonedDateTime.now();
-        Sort sortDesc = Sort.by("start").descending();
 
-        return constructItemDtoForOwner(user, now, sortDesc, item);
+        return constructItemDtoForOwner(user, item);
     }
 
-    private ItemDetailsDto constructItemDtoForOwner(User owner, ZonedDateTime now, Sort sort, Item item) {
-        Booking lastBooking = bookingRepository.findAllByItemOwnerAndEndBefore(owner, now, sort)
-                .stream().findFirst().orElse(null);
-        Booking nextBooking = bookingRepository.findAllByItemOwnerAndStartAfter(owner, now, sort)
-                .stream().findFirst().orElse(null);
+    private ItemDetailsDto constructItemDtoForOwner(User owner, Item item) {
+        List<Booking> bookings = bookingRepository.findAllByItemOwnerAndEndBefore(owner.getId(), item.getId());
+        Booking lastBooking = null;
+        Booking nextBooking = null;
+        if (!bookings.isEmpty()) {
+            lastBooking = bookings.get(0);
+            nextBooking = bookings.get(1);
+        }
 
         return itemMapper.itemDetailsDto(item,
                 BookingMapper.bookingInItemDto(lastBooking),
