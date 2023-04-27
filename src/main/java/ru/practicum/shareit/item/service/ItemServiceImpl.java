@@ -2,10 +2,12 @@ package ru.practicum.shareit.item.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.item.dto.CommentRequest;
 import ru.practicum.shareit.item.dto.ItemDetailsDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
@@ -40,7 +42,11 @@ public class ItemServiceImpl implements ItemService {
         return itemMapper.toItemDto(itemRepository.save(item));
     }
 
-    public Comment addComment(Long itemId, Long userId, String text) {
+    public Comment addComment(Long itemId, Long userId, CommentRequest request) throws Exception {
+        String text = request.getText();
+        if (bookingRepository.findAllByBookerAndItemId(userId, itemId).isEmpty() || text == null || text.trim().isEmpty()) {
+            throw new Exception(String.format("Error for added comment with user id: %d ", userId));
+        }
         Item item = itemRepository.getReferenceById(itemId);
         User author = userRepository.getReferenceById(userId);
         Comment comment = new Comment(text, item, author, LocalDateTime.now());
@@ -80,7 +86,7 @@ public class ItemServiceImpl implements ItemService {
         List<Item> items = itemRepository.findByOwnerIdOrderByIdAsc(userId);
 
         return items.stream()
-                .map(item -> constructItemDtoForOwner(item.getOwner(), item))
+                .map(item -> constructItemDtoForOwner(item.getOwner(), item, commentRepository.findAllByItem_Id(item.getId())))
                 .collect(Collectors.toList());
     }
 
@@ -95,21 +101,24 @@ public class ItemServiceImpl implements ItemService {
     public Object getItemDetails(Long itemId, Long userId) {
         Item item = itemRepository.getReferenceById(itemId);
         User user = userRepository.getReferenceById(userId);
+        List<Comment> comments = commentRepository.findAllByItem_Id(item.getId());
 
-        return constructItemDtoForOwner(user, item);
+        return constructItemDtoForOwner(user, item, comments);
     }
 
-    private ItemDetailsDto constructItemDtoForOwner(User owner, Item item) {
-        List<Booking> bookings = bookingRepository.findAllByItemOwnerAndEndBefore(owner.getId(), item.getId());
+    private ItemDetailsDto constructItemDtoForOwner(User owner, Item item, List<Comment> comments) {
+        PageRequest topTwo = PageRequest.of(0, 2);
+        List<Booking> bookings = bookingRepository.findAllByItemOwnerAndEndBefore(owner.getId(), item.getId(), topTwo);
         Booking lastBooking = null;
         Booking nextBooking = null;
         if (!bookings.isEmpty()) {
             lastBooking = bookings.get(0);
-            nextBooking = bookings.get(1);
+            if (bookings.size() > 1) {
+                nextBooking = bookings.get(1);
+            }
         }
-
         return itemMapper.itemDetailsDto(item,
                 BookingMapper.bookingInItemDto(lastBooking),
-                BookingMapper.bookingInItemDto(nextBooking));
+                BookingMapper.bookingInItemDto(nextBooking), comments);
     }
 }

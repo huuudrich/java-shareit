@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.dto;
 
 import org.springframework.stereotype.Component;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public class ItemMapper {
     }
 
     public ItemDetailsDto itemDetailsDto(Item item, ItemDetailsDto.BookingInfo lastBooking,
-                                         ItemDetailsDto.BookingInfo nextBooking) {
+                                         ItemDetailsDto.BookingInfo nextBooking, List<Comment> comments) {
         return ItemDetailsDto.builder()
                 .id(item.getId())
                 .name(item.getName())
@@ -39,6 +40,7 @@ public class ItemMapper {
                 .available(item.getAvailable())
                 .lastBooking(lastBooking)
                 .nextBooking(nextBooking)
+                .comments(comments)
                 .build();
     }
 

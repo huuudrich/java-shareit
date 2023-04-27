@@ -32,6 +32,7 @@ public class BookingMapper {
                 .id(booking.getId())
                 .bookerId(booking.getBooker().getId())
                 .start(booking.getStart().toLocalDateTime())
-                .end(booking.getEnd().toLocalDateTime()).build();
+                .end(booking.getEnd().toLocalDateTime())
+                .build();
     }
 }

@@ -5,11 +5,10 @@ import lombok.Data;
 import ru.practicum.shareit.item.model.Comment;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @Builder
-public class ItemDetailsDto {
+public class ItemCommentDto {
 
     private Long id;
     private String name;
@@ -19,7 +18,7 @@ public class ItemDetailsDto {
     private BookingInfo lastBooking;
     private BookingInfo nextBooking;
 
-    private List<Comment> comments;
+    private Comment comment;
 
     @Data
     @Builder
