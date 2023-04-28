@@ -40,12 +40,12 @@ public class BookingController {
     @GetMapping
     public List<Booking> getAllBookingsWithBooker(@Positive @RequestHeader(xSharerUserId) Long bookerId,
                                                   @RequestParam(name = "state", required = false) BookingState bookingState) {
-        return bookingService.getAllBookingsByBooker(bookerId, bookingState);
+        return bookingService.getAllBookings(bookerId, bookingState, false);
     }
 
     @GetMapping("/owner")
     public List<Booking> getAllBookingsWithOwner(@Positive @RequestHeader(xSharerUserId) Long ownerId,
                                                  @RequestParam(name = "state", required = false) BookingState bookingState) {
-        return bookingService.getAllBookingsByOwner(ownerId, bookingState);
+        return bookingService.getAllBookings(ownerId, bookingState, true);
     }
 }

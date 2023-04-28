@@ -1,6 +1,8 @@
-package ru.practicum.shareit.item.dto;
+package ru.practicum.shareit.item.utils;
 
 import org.springframework.stereotype.Component;
+import ru.practicum.shareit.item.dto.ItemDetailsDto;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 
@@ -9,7 +11,7 @@ import java.util.List;
 
 @Component
 public class ItemMapper {
-    public Item toItem(ItemDto itemDto) {
+    public static Item toItem(ItemDto itemDto) {
         return Item.builder()
                 .id(itemDto.getId())
                 .name(itemDto.getName())
@@ -20,7 +22,7 @@ public class ItemMapper {
                 .build();
     }
 
-    public ItemDto toItemDto(Item item) {
+    public static ItemDto toItemDto(Item item) {
         return ItemDto.builder()
                 .id(item.getId())
                 .name(item.getName())
@@ -31,7 +33,7 @@ public class ItemMapper {
                 .build();
     }
 
-    public ItemDetailsDto itemDetailsDto(Item item, ItemDetailsDto.BookingInfo lastBooking,
+    public static ItemDetailsDto itemDetailsDto(Item item, ItemDetailsDto.BookingInfo lastBooking,
                                          ItemDetailsDto.BookingInfo nextBooking, List<Comment> comments) {
         return ItemDetailsDto.builder()
                 .id(item.getId())
@@ -44,7 +46,7 @@ public class ItemMapper {
                 .build();
     }
 
-    public List<ItemDto> userListToDto(List<Item> items) {
+    public static List<ItemDto> userListToDto(List<Item> items) {
         List<ItemDto> itemsDto = new ArrayList<>();
         for (Item item : items) {
             itemsDto.add(toItemDto(item));

@@ -3,16 +3,19 @@ package ru.practicum.shareit.item.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exceptions.NotValidCommentException;
-import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemDetailsDto;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.item.utils.CommentRequest;
+import ru.practicum.shareit.item.utils.ItemMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -30,17 +33,16 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
-    private final ItemMapper itemMapper;
 
     public ItemDto addItem(Item item, Long userId) {
         log.info("Adding item with name: {} for user with id: {}", item.getName(), userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
         item.setOwner(user);
-        return itemMapper.toItemDto(itemRepository.save(item));
+        return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
-    public CommentDto addComment(Long itemId, Long userId, CommentRequest request) throws Exception {
+    public CommentDto addComment(Long itemId, Long userId, CommentRequest request) {
         String text = request.getText();
         List<Booking> bookings = bookingRepository.findAllByBookerAndItemId(userId, itemId);
         if (bookings.isEmpty()) {
@@ -72,7 +74,7 @@ public class ItemServiceImpl implements ItemService {
             existingItem.setAvailable(item.getAvailable());
         }
 
-        return itemMapper.toItemDto(itemRepository.save(existingItem));
+        return ItemMapper.toItemDto(itemRepository.save(existingItem));
     }
 
     public ItemDto getItem(Long itemId, Long userId) {
@@ -80,7 +82,7 @@ public class ItemServiceImpl implements ItemService {
         if (!userRepository.existsById(userId)) {
             throw new EntityNotFoundException(String.format("User with id %d not found", userId));
         }
-        return itemMapper.toItemDto(itemRepository.findById(itemId)
+        return ItemMapper.toItemDto(itemRepository.findById(itemId)
                 .orElseThrow(() -> new EntityNotFoundException("Item with id " + itemId + " not found for user with id " + userId)));
     }
 
@@ -99,7 +101,7 @@ public class ItemServiceImpl implements ItemService {
         if (text.trim().isEmpty()) {
             return new ArrayList<>();
         }
-        return itemMapper.userListToDto(itemRepository.search(text));
+        return ItemMapper.userListToDto(itemRepository.search(text));
     }
 
     public Object getItemDetails(Long itemId, Long userId) {
@@ -117,7 +119,7 @@ public class ItemServiceImpl implements ItemService {
                 .stream().findFirst().orElse(null);
         Booking nextBooking = bookingRepository.findNextBooking(owner.getId(), item.getId(), now)
                 .stream().findFirst().orElse(null);
-        return itemMapper.itemDetailsDto(item,
+        return ItemMapper.itemDetailsDto(item,
                 BookingMapper.bookingInItemDto(lastBooking),
                 BookingMapper.bookingInItemDto(nextBooking), comments);
     }
