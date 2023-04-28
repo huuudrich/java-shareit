@@ -31,8 +31,8 @@ public class BookingMapper {
         return ItemDetailsDto.BookingInfo.builder()
                 .id(booking.getId())
                 .bookerId(booking.getBooker().getId())
-                .start(booking.getStart().toLocalDateTime())
-                .end(booking.getEnd().toLocalDateTime())
+                .start(booking.getStart())
+                .end(booking.getEnd())
                 .build();
     }
 }

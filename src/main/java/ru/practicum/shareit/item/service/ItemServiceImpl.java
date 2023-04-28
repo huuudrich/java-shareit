@@ -2,15 +2,13 @@ package ru.practicum.shareit.item.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.item.dto.CommentRequest;
-import ru.practicum.shareit.item.dto.ItemDetailsDto;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemMapper;
+import ru.practicum.shareit.exceptions.NotValidCommentException;
+import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
@@ -42,15 +40,21 @@ public class ItemServiceImpl implements ItemService {
         return itemMapper.toItemDto(itemRepository.save(item));
     }
 
-    public Comment addComment(Long itemId, Long userId, CommentRequest request) throws Exception {
+    public CommentDto addComment(Long itemId, Long userId, CommentRequest request) throws Exception {
         String text = request.getText();
-        if (bookingRepository.findAllByBookerAndItemId(userId, itemId).isEmpty() || text == null || text.trim().isEmpty()) {
-            throw new Exception(String.format("Error for added comment with user id: %d ", userId));
+        List<Booking> bookings = bookingRepository.findAllByBookerAndItemId(userId, itemId);
+        if (bookings.isEmpty()) {
+            throw new NotValidCommentException(String.format("Error for added comment with user id: %d ", userId));
+        }
+
+        if (bookings.stream().allMatch(b -> b.getStart().isAfter(LocalDateTime.now()))) {
+            throw new NotValidCommentException(String.format("Cannot add comment for future booking with user id: %d ", userId));
         }
         Item item = itemRepository.getReferenceById(itemId);
         User author = userRepository.getReferenceById(userId);
         Comment comment = new Comment(text, item, author, LocalDateTime.now());
-        return commentRepository.save(comment);
+        commentRepository.save(comment);
+        return CommentDto.toCommentDto(comment);
     }
 
     public ItemDto updateItem(Long itemId, Item item, Long userId) {
@@ -107,16 +111,12 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private ItemDetailsDto constructItemDtoForOwner(User owner, Item item, List<Comment> comments) {
-        PageRequest topTwo = PageRequest.of(0, 2);
-        List<Booking> bookings = bookingRepository.findAllByItemOwnerAndEndBefore(owner.getId(), item.getId(), topTwo);
-        Booking lastBooking = null;
-        Booking nextBooking = null;
-        if (!bookings.isEmpty()) {
-            lastBooking = bookings.get(0);
-            if (bookings.size() > 1) {
-                nextBooking = bookings.get(1);
-            }
-        }
+        LocalDateTime now = LocalDateTime.now();
+
+        Booking lastBooking = bookingRepository.findLastBooking(owner.getId(), item.getId(), now)
+                .stream().findFirst().orElse(null);
+        Booking nextBooking = bookingRepository.findNextBooking(owner.getId(), item.getId(), now)
+                .stream().findFirst().orElse(null);
         return itemMapper.itemDetailsDto(item,
                 BookingMapper.bookingInItemDto(lastBooking),
                 BookingMapper.bookingInItemDto(nextBooking), comments);

@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingMapper;
@@ -84,21 +85,23 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<Booking> getAllBookingsByBooker(Long userId, BookingState state) {
         log.info("Getting all bookings by booker with id: {} and state: {}", userId, state);
+        LocalDateTime now = LocalDateTime.now();
         userService.getUser(userId);
+        Sort sort = Sort.by(Sort.Direction.DESC, "start");
         if (state == null) {
             state = BookingState.ALL;
         }
         switch (state) {
             case CURRENT:
-                return bookingRepository.findAllBookingsByBookerWithStateCurrent(userId);
+                return bookingRepository.findAllByBookerStateCurrent(userId, now);
             case PAST:
-                return bookingRepository.findAllBookingsByBookerWithStatePast(userId);
+                return bookingRepository.findAllByBookerIdAndEndIsBeforeAndStatusNotLike(userId, now, StatusBooking.REJECTED, sort);
             case FUTURE:
-                return bookingRepository.findAllBookingsByBookerWithStateFuture(userId);
+                return bookingRepository.findAllByBookerIdAndStartAfter(userId, now, sort);
             case WAITING:
-                return bookingRepository.findAllByBookerAndStatusIsWaitingOrderByStartDesc(userId);
+                return bookingRepository.findAllByBookerIdAndStatusIsLike(userId, StatusBooking.WAITING, sort);
             case REJECTED:
-                return bookingRepository.findAllByBookerAndStatusIsRejectedOrderByStartDesc(userId);
+                return bookingRepository.findAllByBookerIdAndStatusIsLike(userId, StatusBooking.REJECTED, sort);
             default:
                 return bookingRepository.findAllByBookerIdOrderByStartDesc(userId);
         }
@@ -109,22 +112,23 @@ public class BookingServiceImpl implements BookingService {
         log.info("Getting all bookings by owner with id: {} and state: {}", userId, state);
         userService.getUser(userId);
         LocalDateTime now = LocalDateTime.now();
+        Sort sort = Sort.by(Sort.Direction.DESC, "start");
         if (state == null) {
             state = BookingState.ALL;
         }
         switch (state) {
             case CURRENT:
-                return bookingRepository.findAllBookingsByOwnerWithStateCurrent(userId, now);
+                return bookingRepository.findAllByOwnerStateCurrent(userId, now);
             case PAST:
-                return bookingRepository.findAllBookingsByOwnerWithStatePast(userId);
+                return bookingRepository.findAllByItemOwnerIdAndEndBeforeAndStatusNotLike(userId, now, StatusBooking.REJECTED, sort);
             case FUTURE:
-                return bookingRepository.findAllBookingsByOwnerWithStateFuture(userId);
+                return bookingRepository.findAllByItemOwnerIdAndStartAfter(userId, now, sort);
             case WAITING:
-                return bookingRepository.findAllByOwnerAndStatusIsWaitingOrderByStartDesc(userId);
+                return bookingRepository.findAllByItemOwnerIdAndStatusIsLike(userId, StatusBooking.WAITING, sort);
             case REJECTED:
-                return bookingRepository.findAllByOwnerAndStatusIsRejectedOrderByStartDesc(userId);
+                return bookingRepository.findAllByItemOwnerIdAndStatusIsLike(userId, StatusBooking.REJECTED, sort);
             default:
-                return bookingRepository.findAllByOwnerIdOrderByStartDesc(userId);
+                return bookingRepository.findAllByItemOwnerIdOrderByStartDesc(userId);
         }
     }
 }

@@ -1,6 +1,5 @@
 package ru.practicum.shareit.booking.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +12,7 @@ import ru.practicum.shareit.user.model.User;
 import javax.persistence.*;
 import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotNull;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -30,15 +29,13 @@ public class Booking {
 
     @FutureOrPresent(message = "Start date must be in the future or present")
     @NotNull(message = "Start date cannot be null")
-    @Column(name = "start_date", columnDefinition = "timestamp with time zone")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-    private ZonedDateTime start;
+    @Column(name = "start_date")
+    private LocalDateTime start;
 
     @FutureOrPresent(message = "End date must be in the future or present")
     @NotNull(message = "End date cannot be null")
-    @Column(name = "end_date", columnDefinition = "timestamp with time zone")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-    private ZonedDateTime end;
+    @Column(name = "end_date")
+    private LocalDateTime end;
 
     @OneToOne
     @JoinColumn(name = "item_id")

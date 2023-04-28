@@ -19,7 +19,7 @@ public class ItemDetailsDto {
     private BookingInfo lastBooking;
     private BookingInfo nextBooking;
 
-    private List<Comment> comments;
+    private List<CommentDto> comments;
 
     @Data
     @Builder

@@ -7,6 +7,7 @@ import ru.practicum.shareit.user.model.User;
 
 import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
 @Data
@@ -16,13 +17,11 @@ public class BookingDtoWithState {
 
     @FutureOrPresent(message = "Start date must be in the future or present")
     @NotNull(message = "Start date cannot be null")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-    private ZonedDateTime start;
+    private LocalDateTime start;
 
     @FutureOrPresent(message = "End date must be in the future or present")
     @NotNull(message = "End date cannot be null")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-    private ZonedDateTime end;
+    private LocalDateTime end;
 
     private Long itemId;
 

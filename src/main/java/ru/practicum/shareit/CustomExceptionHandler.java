@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import ru.practicum.shareit.exceptions.ItemNotAvailableException;
+import ru.practicum.shareit.exceptions.NotValidCommentException;
 
 import javax.persistence.EntityNotFoundException;
 import java.nio.file.AccessDeniedException;
@@ -61,5 +62,11 @@ public class CustomExceptionHandler {
         Map<String, String> errorMap = new HashMap<>();
         errorMap.put("error", errorMessage);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMap);
+    }
+
+    @ExceptionHandler(NotValidCommentException.class)
+    public ResponseEntity<String> handleNotValidCommentException(NotValidCommentException e) {
+        log.warn(e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 }
