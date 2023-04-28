@@ -1,13 +1,8 @@
 package ru.practicum.shareit.user;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import lombok.AllArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.exception.DuplicateEmailFoundException;
-import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
@@ -19,21 +14,17 @@ import java.util.List;
 @RestController
 @RequestMapping(path = "/users")
 @Validated
+@AllArgsConstructor
 public class UserController {
     private final UserService userService;
 
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
-
     @PostMapping
-    public User createUser(@Valid @RequestBody User user) throws DuplicateEmailFoundException {
+    public UserDto createUser(@Valid @RequestBody User user) {
         return userService.createUser(user);
     }
 
     @PatchMapping("{userId}")
-    public User updateUser(@PathVariable @Positive Long userId, @Valid @RequestBody UserDto userDto) throws DuplicateEmailFoundException {
+    public UserDto updateUser(@PathVariable @Positive Long userId, @Valid @RequestBody UserDto userDto) {
         return userService.updateUser(userId, User.toUser(userDto));
     }
 
@@ -43,29 +34,13 @@ public class UserController {
     }
 
     @GetMapping("{userId}")
-    public User getUser(@PathVariable @Positive Long userId) {
+    public UserDto getUser(@PathVariable @Positive Long userId) {
         return userService.getUser(userId);
     }
 
     @GetMapping
-    public List<User> getAllUsers() {
+    public List<UserDto> getAllUsers() {
         return userService.getAllUsers();
-    }
-
-    @ExceptionHandler
-    public ResponseEntity<String> handleCustomEmailException(DuplicateEmailFoundException e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-    }
-
-    @ExceptionHandler
-    public ResponseEntity<String> handleCustomValidationException(MethodArgumentNotValidException e) {
-        String message = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
-    }
-
-    @ExceptionHandler
-    public ResponseEntity<String> handleCustomNotFoundException(NotFoundException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
 }
