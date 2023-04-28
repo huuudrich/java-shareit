@@ -20,5 +20,6 @@ public interface ItemService {
     List<ItemDto> searchItem(String text);
 
     Object getItemDetails(Long itemId, Long userId);
+
     CommentDto addComment(Long itemId, Long userId, CommentRequest text) throws Exception;
 }
