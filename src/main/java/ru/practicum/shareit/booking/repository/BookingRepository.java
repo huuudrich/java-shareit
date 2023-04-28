@@ -1,11 +1,12 @@
 package ru.practicum.shareit.booking.repository;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.booking.model.Booking;
 
-import org.springframework.data.domain.Pageable;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -53,16 +54,16 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findAllBookingsByOwnerWithStateFuture(Long userId);
 
     @Query("select b from Booking b where b.item.owner.id = ?1 " +
-            "and current_timestamp > b.start " +
-            "and current_timestamp > b.end " +
-            "order by b.start DESC")
+            "and b.status != 'REJECTED' " +
+            "and b.start < current_timestamp " +
+            "order by b.start ASC")
     List<Booking> findAllBookingsByOwnerWithStatePast(Long userId);
 
     @Query("select b from Booking b where b.item.owner.id = ?1 " +
-            "and current_timestamp < b.start " +
-            "and current_timestamp > b.end " +
-            "order by b.start DESC")
-    List<Booking> findAllBookingsByOwnerWithStateCurrent(Long userId);
+            "and ?2 > b.start " +
+            "and ?2 < b.end " +
+            "order by b.start ASC")
+    List<Booking> findAllBookingsByOwnerWithStateCurrent(Long userId, LocalDateTime now);
 
     @Query("select b from Booking b where b.item.owner.id = ?1 " +
             "order by b.start DESC")

@@ -17,6 +17,7 @@ import ru.practicum.shareit.user.service.UserService;
 
 import javax.persistence.EntityNotFoundException;
 import java.nio.file.AccessDeniedException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -107,12 +108,13 @@ public class BookingServiceImpl implements BookingService {
     public List<Booking> getAllBookingsByOwner(Long userId, BookingState state) {
         log.info("Getting all bookings by owner with id: {} and state: {}", userId, state);
         userService.getUser(userId);
+        LocalDateTime now = LocalDateTime.now();
         if (state == null) {
             state = BookingState.ALL;
         }
         switch (state) {
             case CURRENT:
-                return bookingRepository.findAllBookingsByOwnerWithStateCurrent(userId);
+                return bookingRepository.findAllBookingsByOwnerWithStateCurrent(userId, now);
             case PAST:
                 return bookingRepository.findAllBookingsByOwnerWithStatePast(userId);
             case FUTURE:
