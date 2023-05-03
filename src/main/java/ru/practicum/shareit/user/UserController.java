@@ -1,6 +1,8 @@
 package ru.practicum.shareit.user;
 
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -19,28 +21,33 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public UserDto createUser(@Valid @RequestBody User user) {
-        return userService.createUser(user);
+    public ResponseEntity<UserDto> createUser(@Valid @RequestBody User user) {
+        UserDto createdUser = userService.createUser(user);
+        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
 
     @PatchMapping("{userId}")
-    public UserDto updateUser(@PathVariable @Positive Long userId, @Valid @RequestBody UserDto userDto) {
-        return userService.updateUser(userId, User.toUser(userDto));
+    public ResponseEntity<UserDto> updateUser(@PathVariable @Positive Long userId, @Valid @RequestBody UserDto userDto) {
+        UserDto updatedUser = userService.updateUser(userId, User.toUser(userDto));
+        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 
     @DeleteMapping("{userId}")
-    public void deleteUser(@PathVariable @Positive Long userId) {
+    public ResponseEntity<Void> deleteUser(@PathVariable @Positive Long userId) {
         userService.deleteUser(userId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("{userId}")
-    public UserDto getUser(@PathVariable @Positive Long userId) {
-        return userService.getUser(userId);
+    public ResponseEntity<UserDto> getUser(@PathVariable @Positive Long userId) {
+        UserDto user = userService.getUser(userId);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @GetMapping
-    public List<UserDto> getAllUsers() {
-        return userService.getAllUsers();
+    public ResponseEntity<List<UserDto>> getAllUsers() {
+        List<UserDto> users = userService.getAllUsers();
+        return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
 }
