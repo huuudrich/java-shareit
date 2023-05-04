@@ -2,7 +2,6 @@ package ru.practicum.shareit.user.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
@@ -45,7 +44,7 @@ public class UserServiceImpl implements UserService {
         log.info("Deleting user with id: {}", userId);
         try {
             userRepository.deleteById(userId);
-        } catch (EmptyResultDataAccessException e) {
+        } catch (EntityNotFoundException e) {
             log.error("Not found user with id: {}", userId);
             throw e;
         }

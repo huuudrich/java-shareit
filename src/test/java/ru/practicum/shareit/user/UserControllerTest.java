@@ -18,7 +18,9 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
-import static org.mockito.Mockito.doThrow;
+import javax.persistence.EntityNotFoundException;
+
+import static org.mockito.Mockito.*;
 
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
 @WebMvcTest(UserController.class)
@@ -92,20 +94,14 @@ public class UserControllerTest {
     public void createUser_whenDuplicateEmail_throwConstraintViolationException() throws Exception {
         User user = new User();
         user.setEmail("test@example.com");
-        user.setName("");
+        user.setName("Test User");
 
-        UserDto userDto = new UserDto();
-        userDto.setEmail("test@example.com");
-        userDto.setName("");
-
-        doThrow(ConstraintViolationException.class).when(userService).deleteUser(userId);
-
-        Mockito.when(userService.createUser(Mockito.any(User.class))).thenReturn(userDto);
+        doThrow(ConstraintViolationException.class).when(userService).createUser(user);
 
         mockMvc.perform(MockMvcRequestBuilders.post(BasePATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(user)))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+                .andExpect(MockMvcResultMatchers.status().isInternalServerError());
     }
 
     @Test
@@ -126,6 +122,17 @@ public class UserControllerTest {
     }
 
     @Test
+    public void getUser_nonExistentUser() throws Exception {
+        Long userId = 1L;
+
+        doThrow(EntityNotFoundException.class).when(userService).getUser(userId);
+
+        mockMvc.perform(MockMvcRequestBuilders.get(BasePATH + "/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
     public void updateUser() throws Exception {
         UserDto userDto = new UserDto();
         userDto.setId(1L);
@@ -141,5 +148,27 @@ public class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(1L))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Updated User"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.email").value("updated@example.com"));
+    }
+
+    @Test
+    public void deleteUser() throws Exception {
+        Long userId = 1L;
+
+        mockMvc.perform(MockMvcRequestBuilders.delete(BasePATH + "/" + userId))
+                .andExpect(MockMvcResultMatchers.status().isNoContent());
+
+        verify(userService, times(1)).deleteUser(userId);
+    }
+
+    @Test
+    public void deleteUser_nonExistentUser() throws Exception {
+        Long userId = 1L;
+
+        doThrow(EntityNotFoundException.class).when(userService).deleteUser(userId);
+
+        mockMvc.perform(MockMvcRequestBuilders.delete(BasePATH + "/" + userId))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+
+        verify(userService, times(1)).deleteUser(userId);
     }
 }

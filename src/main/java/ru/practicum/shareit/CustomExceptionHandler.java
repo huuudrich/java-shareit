@@ -51,7 +51,7 @@ public class CustomExceptionHandler {
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<String> handleItemNotAvailableException(AccessDeniedException e) {
+    public ResponseEntity<String> handleAccessDeniedException(AccessDeniedException e) {
         log.warn(e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
