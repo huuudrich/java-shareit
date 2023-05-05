@@ -27,7 +27,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testCreateUser() {
+    public void createUser() {
         User user = new User();
         user.setEmail("test@test.com");
         user.setName("Test User");
@@ -46,19 +46,21 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testCreateFailEmailUser() {
+    public void updateUser() {
         User user = new User();
+        user.setId(1L);
         user.setEmail("testtest.com");
         user.setName("Test User");
 
         UserDto userDto = new UserDto();
+        userDto.setId(1L);
         userDto.setEmail("testtest.com");
         userDto.setName("Test User");
 
         Mockito.when(userRepository.save(any(User.class))).thenReturn(user);
         Mockito.when(userMapper.toUserDto(any(User.class))).thenReturn(userDto);
 
-        UserDto result = userService.createUser(user);
+        UserDto result = userService.updateUser()
 
         assertEquals(userDto.getEmail(), result.getEmail());
         assertEquals(userDto.getName(), result.getName());

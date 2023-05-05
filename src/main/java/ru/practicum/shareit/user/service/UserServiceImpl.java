@@ -11,6 +11,8 @@ import ru.practicum.shareit.user.repository.UserRepository;
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
 
+import static java.lang.String.format;
+
 @Service
 @AllArgsConstructor
 @Slf4j
@@ -26,7 +28,7 @@ public class UserServiceImpl implements UserService {
     public UserDto updateUser(Long userId, User user) {
         log.info("Updating user with id: {}", userId);
         if (!userRepository.existsById(userId)) {
-            throw new EntityNotFoundException(String.format("User with id %d not found", userId));
+            throw new EntityNotFoundException(format("User with id %d not found", userId));
         }
 
         User existingUser = userMapper.toUser(getUser(userId));
@@ -45,15 +47,14 @@ public class UserServiceImpl implements UserService {
         try {
             userRepository.deleteById(userId);
         } catch (EntityNotFoundException e) {
-            log.error("Not found user with id: {}", userId);
-            throw e;
+            throw new EntityNotFoundException(format("User with id %d not found", userId));
         }
     }
 
     public UserDto getUser(Long userId) {
         log.info("Getting user with id: {}", userId);
         return userMapper.toUserDto(userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("User with id %d not found", userId))));
+                .orElseThrow(() -> new EntityNotFoundException(format("User with id %d not found", userId))));
     }
 
     public List<UserDto> getAllUsers() {
