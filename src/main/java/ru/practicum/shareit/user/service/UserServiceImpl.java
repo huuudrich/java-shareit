@@ -9,6 +9,7 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import javax.persistence.EntityNotFoundException;
+import javax.transaction.Transactional;
 import java.util.List;
 
 import static java.lang.String.format;
@@ -24,7 +25,7 @@ public class UserServiceImpl implements UserService {
         log.info("Creating user with email: {}", user.getEmail());
         return userMapper.toUserDto(userRepository.save(user));
     }
-
+    @Transactional
     public UserDto updateUser(Long userId, User user) {
         log.info("Updating user with id: {}", userId);
         if (!userRepository.existsById(userId)) {

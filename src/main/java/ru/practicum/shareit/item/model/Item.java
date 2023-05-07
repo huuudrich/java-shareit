@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithRequest;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
@@ -55,4 +56,6 @@ public class Item {
                 .owner(itemDto.getOwner())
                 .request(itemDto.getRequest()).build();
     }
+
+
 }

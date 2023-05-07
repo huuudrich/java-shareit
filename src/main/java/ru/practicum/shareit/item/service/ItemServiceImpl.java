@@ -10,12 +10,15 @@ import ru.practicum.shareit.exceptions.NotValidCommentException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDetailsDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithRequest;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.item.utils.CommentRequest;
 import ru.practicum.shareit.item.utils.ItemMapper;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.repository.RequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -23,7 +26,12 @@ import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static ru.practicum.shareit.item.utils.ItemMapper.itemToRequest;
+import static ru.practicum.shareit.item.utils.ItemMapper.requestToItem;
+import static ru.practicum.shareit.request.dto.ItemRequestDto.toItemRequestDto;
 
 @Service
 @AllArgsConstructor
@@ -33,13 +41,32 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final RequestRepository requestRepository;
 
-    public ItemDto addItem(Item item, Long userId) {
+    public Object addItem(ItemWithRequest itemDto, Long userId) {
+
+        ItemRequest request = null;
+        List<ItemWithRequest> items = new ArrayList<>();
+
+        if (itemDto.getRequestId() != null) {
+            Optional<ItemRequest> optionalRequest = requestRepository.findById(itemDto.getRequestId());
+
+            if (optionalRequest.isPresent()) {
+                request = optionalRequest.get();
+                items.add(itemDto);
+                toItemRequestDto(request).setItems(items);
+            }
+        }
+
+        Item item = requestToItem(itemDto, request);
         log.info("Adding item with name: {} for user with id: {}", item.getName(), userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
         item.setOwner(user);
-        return ItemMapper.toItemDto(itemRepository.save(item));
+        if (request == null) {
+            return ItemMapper.toItemDto(itemRepository.save(item));
+        }
+        return itemToRequest(itemRepository.save(item), request);
     }
 
     public CommentDto addComment(Long itemId, Long userId, CommentRequest request) {
