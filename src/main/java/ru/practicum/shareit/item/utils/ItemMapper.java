@@ -87,4 +87,13 @@ public class ItemMapper {
         }
         return itemsDto;
     }
+
+    public static List<ItemWithRequest> itemListToRequestWithoutId(List<Item> items) {
+        List<ItemWithRequest> itemWithRequestList = new ArrayList<>();
+        for (Item item : items) {
+            ItemWithRequest itemWithRequest = itemToRequest(item, item.getRequest());
+            itemWithRequestList.add(itemWithRequest);
+        }
+        return itemWithRequestList;
+    }
 }

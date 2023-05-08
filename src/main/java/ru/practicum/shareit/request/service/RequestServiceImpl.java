@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.item.utils.ItemMapper.itemListToRequest;
 import static ru.practicum.shareit.request.dto.ItemRequestDto.toItemRequestDto;
+import static ru.practicum.shareit.item.utils.ItemMapper.itemListToRequestWithoutId;
+
 
 @Service
 @AllArgsConstructor
@@ -68,7 +70,7 @@ public class RequestServiceImpl implements RequestService {
         return requestRepository.findAllOrderByCreatedDesc(pageable)
                 .map(request -> {
                     ItemRequestDto requestDto = toItemRequestDto(request);
-                    List<ItemWithRequest> items = itemListToRequest(itemRepository.findAllByRequestId(request.getId()));
+                    List<ItemWithRequest> items = itemListToRequestWithoutId(itemRepository.findAllByRequestId(request.getId()));
                     requestDto.setItems(items);
                     return requestDto;
                 })

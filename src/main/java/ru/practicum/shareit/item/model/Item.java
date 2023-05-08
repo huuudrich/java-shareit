@@ -56,6 +56,4 @@ public class Item {
                 .owner(itemDto.getOwner())
                 .request(itemDto.getRequest()).build();
     }
-
-
 }
