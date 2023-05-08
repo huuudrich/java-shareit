@@ -31,7 +31,7 @@ public class UserControllerTest {
 
     @MockBean
     private UserService userService;
-    private final String BasePATH = "/users";
+    private final String basePath = "/users";
 
 
     @Test
@@ -46,7 +46,7 @@ public class UserControllerTest {
 
         Mockito.when(userService.createUser(Mockito.any(User.class))).thenReturn(userDto);
 
-        mockMvc.perform(MockMvcRequestBuilders.post(BasePATH)
+        mockMvc.perform(MockMvcRequestBuilders.post(basePath)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(user)))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
@@ -66,7 +66,7 @@ public class UserControllerTest {
 
         Mockito.when(userService.createUser(Mockito.any(User.class))).thenReturn(userDto);
 
-        mockMvc.perform(MockMvcRequestBuilders.post(BasePATH)
+        mockMvc.perform(MockMvcRequestBuilders.post(basePath)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
@@ -84,7 +84,7 @@ public class UserControllerTest {
 
         Mockito.when(userService.createUser(Mockito.any(User.class))).thenReturn(userDto);
 
-        mockMvc.perform(MockMvcRequestBuilders.post(BasePATH)
+        mockMvc.perform(MockMvcRequestBuilders.post(basePath)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(user)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
@@ -98,7 +98,7 @@ public class UserControllerTest {
 
         doThrow(ConstraintViolationException.class).when(userService).createUser(user);
 
-        mockMvc.perform(MockMvcRequestBuilders.post(BasePATH)
+        mockMvc.perform(MockMvcRequestBuilders.post(basePath)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(user)))
                 .andExpect(MockMvcResultMatchers.status().isInternalServerError());
@@ -113,7 +113,7 @@ public class UserControllerTest {
 
         Mockito.when(userService.getUser(1L)).thenReturn(userDto);
 
-        mockMvc.perform(MockMvcRequestBuilders.get(BasePATH + "/1")
+        mockMvc.perform(MockMvcRequestBuilders.get(basePath + "/1")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(1L))
@@ -127,7 +127,7 @@ public class UserControllerTest {
 
         doThrow(EntityNotFoundException.class).when(userService).getUser(userId);
 
-        mockMvc.perform(MockMvcRequestBuilders.get(BasePATH + "/1")
+        mockMvc.perform(MockMvcRequestBuilders.get(basePath + "/1")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
@@ -141,7 +141,7 @@ public class UserControllerTest {
 
         Mockito.when(userService.updateUser(Mockito.eq(1L), Mockito.any(User.class))).thenReturn(userDto);
 
-        mockMvc.perform(MockMvcRequestBuilders.patch(BasePATH + "/1")
+        mockMvc.perform(MockMvcRequestBuilders.patch(basePath + "/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(userDto)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -154,7 +154,7 @@ public class UserControllerTest {
     public void deleteUser() throws Exception {
         Long userId = 1L;
 
-        mockMvc.perform(MockMvcRequestBuilders.delete(BasePATH + "/" + userId))
+        mockMvc.perform(MockMvcRequestBuilders.delete(basePath + "/" + userId))
                 .andExpect(MockMvcResultMatchers.status().isNoContent());
 
         verify(userService, times(1)).deleteUser(userId);
@@ -166,7 +166,7 @@ public class UserControllerTest {
 
         doThrow(EntityNotFoundException.class).when(userService).deleteUser(userId);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete(BasePATH + "/" + userId))
+        mockMvc.perform(MockMvcRequestBuilders.delete(basePath + "/" + userId))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
 
         verify(userService, times(1)).deleteUser(userId);
