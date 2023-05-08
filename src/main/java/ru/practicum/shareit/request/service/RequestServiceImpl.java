@@ -51,7 +51,7 @@ public class RequestServiceImpl implements RequestService {
 
     @Transactional
     public List<ItemRequestDto> getAllRequests(Long userId) {
-        userService.existingUser(userId);
+        User user = User.toUser(userService.getUser(userId));
         List<ItemRequest> requests = requestRepository.getAllByRequesterOrderByCreatedDesc(user);
         log.info("Created request with user id: {}", userId);
 
@@ -65,7 +65,7 @@ public class RequestServiceImpl implements RequestService {
 
     @Transactional
     public List<ItemRequestDto> getAllRequestsPagination(Long userId, Pageable pageable) {
-        User user = User.toUser(userService.getUser(userId));
+        userService.existingUser(userId);
 
         return requestRepository.findAllWithoutOwner(userId, pageable)
                 .map(request -> {
