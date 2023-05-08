@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,14 +46,20 @@ public class ItemController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ItemDetailsDto>> getAllItemsWithUser(@Positive @RequestHeader(xSharerUserId) Long userId) {
-        List<ItemDetailsDto> items = itemService.getAllItemsWithUser(userId);
+    public ResponseEntity<List<ItemDetailsDto>> getAllItemsWithUser(@Positive @RequestHeader(xSharerUserId) Long userId,
+                                                                    @RequestParam(name = "from", defaultValue = "0") @Positive int from,
+                                                                    @RequestParam(name = "size", defaultValue = "10") @Positive int size) {
+        Pageable pageable = PageRequest.of(from, size);
+        List<ItemDetailsDto> items = itemService.getAllItemsWithUser(userId, pageable);
         return ResponseEntity.ok(items);
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<ItemDto>> searchItem(@RequestParam("text") String text) {
-        List<ItemDto> items = itemService.searchItem(text);
+    public ResponseEntity<List<ItemDto>> searchItem(@RequestParam("text") String text,
+                                                    @RequestParam(name = "from", defaultValue = "0") @Positive int from,
+                                                    @RequestParam(name = "size", defaultValue = "10") @Positive int size) {
+        Pageable pageable = PageRequest.of(from, size);
+        List<ItemDto> items = itemService.searchItem(text, pageable);
         return ResponseEntity.ok(items);
     }
 

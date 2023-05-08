@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.item.utils.ItemMapper.itemListToRequest;
-import static ru.practicum.shareit.request.dto.ItemRequestDto.toItemRequestDto;
 import static ru.practicum.shareit.item.utils.ItemMapper.itemListToRequestWithoutId;
+import static ru.practicum.shareit.request.dto.ItemRequestDto.toItemRequestDto;
 
 
 @Service
@@ -41,23 +41,23 @@ public class RequestServiceImpl implements RequestService {
 
     @Transactional
     public ItemRequestDto getRequest(Long userId, Long requestId) {
-        User user = User.toUser(userService.getUser(userId));
+        userService.existingUser(userId);
         ItemRequest request = requestRepository.getReferenceById(requestId);
         ItemRequestDto requestDto = toItemRequestDto(request);
-        List<ItemWithRequest> items = itemListToRequest(itemRepository.findAllByRequestId(requestId), request);
+        List<ItemWithRequest> items = itemListToRequest(itemRepository.findAllByRequest(request), request);
         requestDto.setItems(items);
         return requestDto;
     }
 
     @Transactional
     public List<ItemRequestDto> getAllRequests(Long userId) {
-        User user = User.toUser(userService.getUser(userId));
+        userService.existingUser(userId);
         List<ItemRequest> requests = requestRepository.getAllByRequesterOrderByCreatedDesc(user);
         log.info("Created request with user id: {}", userId);
 
         return requests.stream().map(request -> {
             ItemRequestDto requestDto = toItemRequestDto(request);
-            List<ItemWithRequest> items = itemListToRequest(itemRepository.findAllByRequestId(request.getId()), request);
+            List<ItemWithRequest> items = itemListToRequest(itemRepository.findAllByRequest(request), request);
             requestDto.setItems(items);
             return requestDto;
         }).collect(Collectors.toList());
@@ -67,10 +67,10 @@ public class RequestServiceImpl implements RequestService {
     public List<ItemRequestDto> getAllRequestsPagination(Long userId, Pageable pageable) {
         User user = User.toUser(userService.getUser(userId));
 
-        return requestRepository.findAllOrderByCreatedDesc(pageable)
+        return requestRepository.findAllWithoutOwner(userId, pageable)
                 .map(request -> {
                     ItemRequestDto requestDto = toItemRequestDto(request);
-                    List<ItemWithRequest> items = itemListToRequestWithoutId(itemRepository.findAllByRequestId(request.getId()));
+                    List<ItemWithRequest> items = itemListToRequestWithoutId(itemRepository.findAllByRequest(request));
                     requestDto.setItems(items);
                     return requestDto;
                 })

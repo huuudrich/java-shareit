@@ -1,6 +1,9 @@
 package ru.practicum.shareit.booking;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,15 +47,23 @@ public class BookingController {
 
     @GetMapping
     public ResponseEntity<List<Booking>> getAllBookingsWithBooker(@Positive @RequestHeader(xSharerUserId) Long bookerId,
-                                                                  @RequestParam(name = "state", required = false) BookingState bookingState) {
-        List<Booking> bookings = bookingService.getAllBookings(bookerId, bookingState, false);
+                                                                  @RequestParam(name = "state", required = false) BookingState bookingState,
+                                                                  @RequestParam(name = "from", defaultValue = "0") int from,
+                                                                  @RequestParam(name = "size", defaultValue = "10") int size) throws Exception {
+        if (size < 0 || from < 0) throw new Exception("Size or From must be positive");
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "start"));
+        List<Booking> bookings = bookingService.getAllBookings(bookerId, bookingState, false, pageable);
         return ResponseEntity.ok(bookings);
     }
 
     @GetMapping("/owner")
     public ResponseEntity<List<Booking>> getAllBookingsWithOwner(@Positive @RequestHeader(xSharerUserId) Long ownerId,
-                                                                 @RequestParam(name = "state", required = false) BookingState bookingState) {
-        List<Booking> bookings = bookingService.getAllBookings(ownerId, bookingState, true);
+                                                                 @RequestParam(name = "state", required = false) BookingState bookingState,
+                                                                 @RequestParam(name = "from", defaultValue = "0") int from,
+                                                                 @RequestParam(name = "size", defaultValue = "10") int size) throws Exception {
+        if (size < 0 || from < 0) throw new Exception("Size or From must be positive");
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "start"));
+        List<Booking> bookings = bookingService.getAllBookings(ownerId, bookingState, true, pageable);
         return ResponseEntity.ok(bookings);
     }
 }

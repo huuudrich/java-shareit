@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
@@ -113,22 +114,22 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new EntityNotFoundException("Item with id " + itemId + " not found for user with id " + userId)));
     }
 
-    public List<ItemDetailsDto> getAllItemsWithUser(Long userId) {
+    public List<ItemDetailsDto> getAllItemsWithUser(Long userId, Pageable pageable) {
         log.info("Getting all items for user with id: {}", userId);
 
-        List<Item> items = itemRepository.findByOwnerIdOrderByIdAsc(userId);
+        List<Item> items = itemRepository.findByOwnerIdOrderByIdAsc(userId, pageable).getContent();
 
         return items.stream()
                 .map(item -> constructItemDtoForOwner(item.getOwner(), item, commentRepository.findAllByItem_Id(item.getId())))
                 .collect(Collectors.toList());
     }
 
-    public List<ItemDto> searchItem(String text) {
+    public List<ItemDto> searchItem(String text, Pageable pageable) {
         log.info("Searching items with text: {}", text);
         if (text.trim().isEmpty()) {
             return new ArrayList<>();
         }
-        return ItemMapper.userListToDto(itemRepository.search(text));
+        return ItemMapper.userListToDto(itemRepository.search(text, pageable).getContent());
     }
 
     public Object getItemDetails(Long itemId, Long userId) {

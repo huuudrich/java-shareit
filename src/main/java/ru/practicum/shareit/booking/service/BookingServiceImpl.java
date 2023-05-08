@@ -2,7 +2,7 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingMapper;
@@ -94,33 +94,32 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<Booking> getAllBookings(Long userId, BookingState state, boolean isOwner) {
+    public List<Booking> getAllBookings(Long userId, BookingState state, boolean isOwner, Pageable pageable) {
         log.info("Getting all bookings by {} with id: {} and state: {}", isOwner ? "owner" : "booker", userId, state);
         userService.getUser(userId);
         LocalDateTime now = LocalDateTime.now();
-        Sort sort = Sort.by(Sort.Direction.DESC, "start");
         if (state == null) {
             state = BookingState.ALL;
         }
         switch (state) {
             case CURRENT:
-                return isOwner ? bookingRepository.findAllByOwnerStateCurrent(userId, now)
-                        : bookingRepository.findAllByBookerStateCurrent(userId, now);
+                return isOwner ? bookingRepository.findAllByOwnerStateCurrent(userId, now, pageable).getContent()
+                        : bookingRepository.findAllByBookerStateCurrent(userId, now, pageable).getContent();
             case PAST:
-                return isOwner ? bookingRepository.findAllByItemOwnerIdAndEndBeforeAndStatusNotLike(userId, now, StatusBooking.REJECTED, sort)
-                        : bookingRepository.findAllByBookerIdAndEndIsBeforeAndStatusNotLike(userId, now, StatusBooking.REJECTED, sort);
+                return isOwner ? bookingRepository.findAllByItemOwnerIdAndEndBeforeAndStatusNotLike(userId, now, StatusBooking.REJECTED, pageable).getContent()
+                        : bookingRepository.findAllByBookerIdAndEndIsBeforeAndStatusNotLike(userId, now, StatusBooking.REJECTED, pageable).getContent();
             case FUTURE:
-                return isOwner ? bookingRepository.findAllByItemOwnerIdAndStartAfter(userId, now, sort)
-                        : bookingRepository.findAllByBookerIdAndStartAfter(userId, now, sort);
+                return isOwner ? bookingRepository.findAllByItemOwnerIdAndStartAfter(userId, now, pageable).getContent()
+                        : bookingRepository.findAllByBookerIdAndStartAfter(userId, now, pageable).getContent();
             case WAITING:
-                return isOwner ? bookingRepository.findAllByItemOwnerIdAndStatusIsLike(userId, StatusBooking.WAITING, sort)
-                        : bookingRepository.findAllByBookerIdAndStatusIsLike(userId, StatusBooking.WAITING, sort);
+                return isOwner ? bookingRepository.findAllByItemOwnerIdAndStatusIsLike(userId, StatusBooking.WAITING, pageable).getContent()
+                        : bookingRepository.findAllByBookerIdAndStatusIsLike(userId, StatusBooking.WAITING, pageable).getContent();
             case REJECTED:
-                return isOwner ? bookingRepository.findAllByItemOwnerIdAndStatusIsLike(userId, StatusBooking.REJECTED, sort)
-                        : bookingRepository.findAllByBookerIdAndStatusIsLike(userId, StatusBooking.REJECTED, sort);
+                return isOwner ? bookingRepository.findAllByItemOwnerIdAndStatusIsLike(userId, StatusBooking.REJECTED, pageable).getContent()
+                        : bookingRepository.findAllByBookerIdAndStatusIsLike(userId, StatusBooking.REJECTED, pageable).getContent();
             default:
-                return isOwner ? bookingRepository.findAllByItemOwnerIdOrderByStartDesc(userId)
-                        : bookingRepository.findAllByBookerIdOrderByStartDesc(userId);
+                return isOwner ? bookingRepository.findAllByItemOwnerIdOrderByStartDesc(userId, pageable).getContent()
+                        : bookingRepository.findAllByBookerIdOrderByStartDesc(userId, pageable).getContent();
         }
     }
 }

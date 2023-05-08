@@ -62,4 +62,10 @@ public class UserServiceImpl implements UserService {
         log.info("Getting all users");
         return userMapper.userListToDto(userRepository.findAll());
     }
+
+    public void existingUser(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new EntityNotFoundException(format("User with id %d not found", userId));
+        }
+    }
 }
