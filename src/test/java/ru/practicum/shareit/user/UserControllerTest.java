@@ -31,7 +31,7 @@ public class UserControllerTest {
 
     @MockBean
     private UserService userService;
-    private final static String BasePATH = "/users";
+    private final String BasePATH = "/users";
 
 
     @Test

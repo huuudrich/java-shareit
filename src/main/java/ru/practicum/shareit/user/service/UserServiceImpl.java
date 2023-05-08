@@ -25,6 +25,7 @@ public class UserServiceImpl implements UserService {
         log.info("Creating user with email: {}", user.getEmail());
         return userMapper.toUserDto(userRepository.save(user));
     }
+
     @Transactional
     public UserDto updateUser(Long userId, User user) {
         log.info("Updating user with id: {}", userId);
