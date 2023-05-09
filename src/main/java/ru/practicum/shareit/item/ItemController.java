@@ -5,22 +5,22 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.item.dto.CommentDto;
-import ru.practicum.shareit.item.dto.ItemDetailsDto;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemWithRequest;
-import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.service.ItemService;
-import ru.practicum.shareit.item.utils.CommentRequest;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
+
+import static ru.practicum.shareit.item.utils.ItemMapper.toItem;
 
 @RestController
 @RequestMapping("/items")
 @AllArgsConstructor
+@Validated
 public class ItemController {
 
     private final ItemService itemService;
@@ -35,7 +35,7 @@ public class ItemController {
     @PatchMapping("{itemId}")
     public ResponseEntity<Object> updateItem(@PathVariable @Positive Long itemId,
                                               @Valid @RequestBody ItemDto itemDto, @Positive @RequestHeader(xSharerUserId) Long userId) {
-        ItemDto updatedItem = itemService.updateItem(itemId, Item.toItem(itemDto), userId);
+        ItemDto updatedItem = itemService.updateItem(itemId, toItem(itemDto), userId);
         return ResponseEntity.ok(updatedItem);
     }
 
@@ -47,8 +47,8 @@ public class ItemController {
 
     @GetMapping
     public ResponseEntity<List<ItemDetailsDto>> getAllItemsWithUser(@Positive @RequestHeader(xSharerUserId) Long userId,
-                                                                    @RequestParam(name = "from", defaultValue = "0") @Positive int from,
-                                                                    @RequestParam(name = "size", defaultValue = "10") @Positive int size) {
+                                                                    @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
+                                                                    @PositiveOrZero @RequestParam(name = "size", defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(from, size);
         List<ItemDetailsDto> items = itemService.getAllItemsWithUser(userId, pageable);
         return ResponseEntity.ok(items);
@@ -56,8 +56,8 @@ public class ItemController {
 
     @GetMapping("/search")
     public ResponseEntity<List<ItemDto>> searchItem(@RequestParam("text") String text,
-                                                    @RequestParam(name = "from", defaultValue = "0") @Positive int from,
-                                                    @RequestParam(name = "size", defaultValue = "10") @Positive int size) {
+                                                    @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
+                                                    @PositiveOrZero @RequestParam(name = "size", defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(from, size);
         List<ItemDto> items = itemService.searchItem(text, pageable);
         return ResponseEntity.ok(items);

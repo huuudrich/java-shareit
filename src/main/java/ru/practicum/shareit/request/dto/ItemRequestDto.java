@@ -40,13 +40,4 @@ public class ItemRequestDto {
                 itemRequest.getCreated()
         );
     }
-
-    public static List<ItemRequestDto> toItemRequestDtoList(List<ItemRequest> itemRequests) {
-        List<ItemRequestDto> itemRequestDtos = new ArrayList<>();
-        for (ItemRequest itemRequest : itemRequests) {
-            ItemRequestDto itemRequestDto = toItemRequestDto(itemRequest);
-            itemRequestDtos.add(itemRequestDto);
-        }
-        return itemRequestDtos;
-    }
 }

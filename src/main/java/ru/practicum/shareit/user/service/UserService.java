@@ -15,4 +15,6 @@ public interface UserService {
     UserDto getUser(Long userId);
 
     List<UserDto> getAllUsers();
+
+    void isExistingUser(Long userId);
 }

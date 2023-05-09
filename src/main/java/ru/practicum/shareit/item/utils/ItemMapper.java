@@ -38,8 +38,8 @@ public class ItemMapper {
                 .build();
     }
 
-    public static ItemDetailsDto itemDetailsDto(Item item, ItemDetailsDto.BookingInfo lastBooking,
-                                         ItemDetailsDto.BookingInfo nextBooking, List<Comment> comments) {
+    public static ItemDetailsDto toitemDetailsDto(Item item, ItemDetailsDto.BookingInfo lastBooking,
+                                                  ItemDetailsDto.BookingInfo nextBooking, List<Comment> comments) {
         return ItemDetailsDto.builder()
                 .id(item.getId())
                 .name(item.getName())
@@ -51,7 +51,7 @@ public class ItemMapper {
                 .build();
     }
 
-    public static List<ItemDto> userListToDto(List<Item> items) {
+    public static List<ItemDto> toItemListDto(List<Item> items) {
         List<ItemDto> itemsDto = new ArrayList<>();
         for (Item item : items) {
             itemsDto.add(toItemDto(item));
@@ -59,7 +59,7 @@ public class ItemMapper {
         return itemsDto;
     }
 
-    public static Item requestToItem(ItemWithRequest itemDto, ItemRequest itemRequest) {
+    public static Item itemWithRequestToItem(ItemWithRequest itemDto, ItemRequest itemRequest) {
         return Item.builder()
                 .id(itemDto.getId())
                 .name(itemDto.getName())
@@ -69,7 +69,7 @@ public class ItemMapper {
                 .request(itemRequest).build();
     }
 
-    public static ItemWithRequest itemToRequest(Item item, ItemRequest itemRequest) {
+    public static ItemWithRequest toItemWithRequest(Item item, ItemRequest itemRequest) {
         return ItemWithRequest.builder()
                 .id(item.getId())
                 .name(item.getName())
@@ -80,18 +80,18 @@ public class ItemMapper {
                 .build();
     }
 
-    public static List<ItemWithRequest> itemListToRequest(List<Item> items, ItemRequest itemRequest) {
+    public static List<ItemWithRequest> toListItemWithRequest(List<Item> items, ItemRequest itemRequest) {
         List<ItemWithRequest> itemsDto = new ArrayList<>();
         for (Item item : items) {
-            itemsDto.add(itemToRequest(item, itemRequest));
+            itemsDto.add(toItemWithRequest(item, itemRequest));
         }
         return itemsDto;
     }
 
-    public static List<ItemWithRequest> itemListToRequestWithoutId(List<Item> items) {
+    public static List<ItemWithRequest> toListItemWithRequestWithoutItemRequest(List<Item> items) {
         List<ItemWithRequest> itemWithRequestList = new ArrayList<>();
         for (Item item : items) {
-            ItemWithRequest itemWithRequest = itemToRequest(item, item.getRequest());
+            ItemWithRequest itemWithRequest = toItemWithRequest(item, item.getRequest());
             itemWithRequestList.add(itemWithRequest);
         }
         return itemWithRequestList;

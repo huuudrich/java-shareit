@@ -13,6 +13,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.util.List;
 
+import static ru.practicum.shareit.user.utils.UserMapper.toUser;
+
 @RestController
 @RequestMapping(path = "/users")
 @Validated
@@ -28,7 +30,7 @@ public class UserController {
 
     @PatchMapping("{userId}")
     public ResponseEntity<UserDto> updateUser(@PathVariable @Positive Long userId, @Valid @RequestBody UserDto userDto) {
-        UserDto updatedUser = userService.updateUser(userId, User.toUser(userDto));
+        UserDto updatedUser = userService.updateUser(userId, toUser(userDto));
         return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 

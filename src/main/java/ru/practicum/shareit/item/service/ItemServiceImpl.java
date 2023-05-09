@@ -4,24 +4,21 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.booking.utils.BookingMapper;
 import ru.practicum.shareit.exceptions.NotValidCommentException;
-import ru.practicum.shareit.item.dto.CommentDto;
-import ru.practicum.shareit.item.dto.ItemDetailsDto;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemWithRequest;
+import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.item.utils.CommentRequest;
 import ru.practicum.shareit.item.utils.ItemMapper;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.RequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.user.service.UserService;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
@@ -30,9 +27,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static ru.practicum.shareit.item.utils.ItemMapper.itemToRequest;
-import static ru.practicum.shareit.item.utils.ItemMapper.requestToItem;
+import static ru.practicum.shareit.item.utils.CommentMapper.toCommentDto;
+import static ru.practicum.shareit.item.utils.ItemMapper.*;
 import static ru.practicum.shareit.request.dto.ItemRequestDto.toItemRequestDto;
+import static ru.practicum.shareit.user.utils.UserMapper.toUser;
 
 @Service
 @AllArgsConstructor
@@ -40,34 +38,37 @@ import static ru.practicum.shareit.request.dto.ItemRequestDto.toItemRequestDto;
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final UserService userService;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
     private final RequestRepository requestRepository;
 
-    public Object addItem(ItemWithRequest itemDto, Long userId) {
+    public Object addItem(ItemWithRequest itemWithRequest, Long userId) {
 
         ItemRequest request = null;
         List<ItemWithRequest> items = new ArrayList<>();
 
-        if (itemDto.getRequestId() != null) {
-            Optional<ItemRequest> optionalRequest = requestRepository.findById(itemDto.getRequestId());
+        if (itemWithRequest.getRequestId() != null) {
+            Optional<ItemRequest> optionalRequest = requestRepository.findById(itemWithRequest.getRequestId());
 
             if (optionalRequest.isPresent()) {
                 request = optionalRequest.get();
-                items.add(itemDto);
+                items.add(itemWithRequest);
                 toItemRequestDto(request).setItems(items);
             }
         }
 
-        Item item = requestToItem(itemDto, request);
+        Item item = itemWithRequestToItem(itemWithRequest, request);
+
         log.info("Adding item with name: {} for user with id: {}", item.getName(), userId);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
+
+        User user = toUser(userService.getUser(userId));
         item.setOwner(user);
+
         if (request == null) {
             return ItemMapper.toItemDto(itemRepository.save(item));
         }
-        return itemToRequest(itemRepository.save(item), request);
+        return toItemWithRequest(itemRepository.save(item), request);
     }
 
     public CommentDto addComment(Long itemId, Long userId, CommentRequest request) {
@@ -84,7 +85,7 @@ public class ItemServiceImpl implements ItemService {
         User author = userRepository.getReferenceById(userId);
         Comment comment = new Comment(text, item, author, LocalDateTime.now());
         commentRepository.save(comment);
-        return CommentDto.toCommentDto(comment);
+        return toCommentDto(comment);
     }
 
     public ItemDto updateItem(Long itemId, Item item, Long userId) {
@@ -129,7 +130,7 @@ public class ItemServiceImpl implements ItemService {
         if (text.trim().isEmpty()) {
             return new ArrayList<>();
         }
-        return ItemMapper.userListToDto(itemRepository.search(text, pageable).getContent());
+        return toItemListDto(itemRepository.search(text, pageable).getContent());
     }
 
     public Object getItemDetails(Long itemId, Long userId) {
@@ -147,7 +148,8 @@ public class ItemServiceImpl implements ItemService {
                 .stream().findFirst().orElse(null);
         Booking nextBooking = bookingRepository.findNextBooking(owner.getId(), item.getId(), now)
                 .stream().findFirst().orElse(null);
-        return ItemMapper.itemDetailsDto(item,
+
+        return toitemDetailsDto(item,
                 BookingMapper.bookingInItemDto(lastBooking),
                 BookingMapper.bookingInItemDto(nextBooking), comments);
     }

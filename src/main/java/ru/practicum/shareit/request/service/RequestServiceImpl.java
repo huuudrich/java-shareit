@@ -17,9 +17,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static ru.practicum.shareit.item.utils.ItemMapper.itemListToRequest;
-import static ru.practicum.shareit.item.utils.ItemMapper.itemListToRequestWithoutId;
+import static ru.practicum.shareit.item.utils.ItemMapper.toListItemWithRequest;
+import static ru.practicum.shareit.item.utils.ItemMapper.toListItemWithRequestWithoutItemRequest;
 import static ru.practicum.shareit.request.dto.ItemRequestDto.toItemRequestDto;
+import static ru.practicum.shareit.user.utils.UserMapper.toUser;
 
 
 @Service
@@ -32,7 +33,7 @@ public class RequestServiceImpl implements RequestService {
 
     @Transactional
     public ItemRequestDto createRequest(ItemRequest itemRequest, Long userId) {
-        User user = User.toUser(userService.getUser(userId));
+        User user = toUser(userService.getUser(userId));
         itemRequest.setRequester(user);
         itemRequest.setCreated(LocalDateTime.now());
         requestRepository.save(itemRequest);
@@ -41,23 +42,23 @@ public class RequestServiceImpl implements RequestService {
 
     @Transactional
     public ItemRequestDto getRequest(Long userId, Long requestId) {
-        userService.existingUser(userId);
+        userService.isExistingUser(userId);
         ItemRequest request = requestRepository.getReferenceById(requestId);
         ItemRequestDto requestDto = toItemRequestDto(request);
-        List<ItemWithRequest> items = itemListToRequest(itemRepository.findAllByRequest(request), request);
+        List<ItemWithRequest> items = toListItemWithRequest(itemRepository.findAllByRequest(request), request);
         requestDto.setItems(items);
         return requestDto;
     }
 
     @Transactional
     public List<ItemRequestDto> getAllRequests(Long userId) {
-        User user = User.toUser(userService.getUser(userId));
+        User user = toUser(userService.getUser(userId));
         List<ItemRequest> requests = requestRepository.getAllByRequesterOrderByCreatedDesc(user);
         log.info("Created request with user id: {}", userId);
 
         return requests.stream().map(request -> {
             ItemRequestDto requestDto = toItemRequestDto(request);
-            List<ItemWithRequest> items = itemListToRequest(itemRepository.findAllByRequest(request), request);
+            List<ItemWithRequest> items = toListItemWithRequest(itemRepository.findAllByRequest(request), request);
             requestDto.setItems(items);
             return requestDto;
         }).collect(Collectors.toList());
@@ -65,12 +66,12 @@ public class RequestServiceImpl implements RequestService {
 
     @Transactional
     public List<ItemRequestDto> getAllRequestsPagination(Long userId, Pageable pageable) {
-        userService.existingUser(userId);
+        userService.isExistingUser(userId);
 
         return requestRepository.findAllWithoutOwner(userId, pageable)
                 .map(request -> {
                     ItemRequestDto requestDto = toItemRequestDto(request);
-                    List<ItemWithRequest> items = itemListToRequestWithoutId(itemRepository.findAllByRequest(request));
+                    List<ItemWithRequest> items = toListItemWithRequestWithoutItemRequest(itemRepository.findAllByRequest(request));
                     requestDto.setItems(items);
                     return requestDto;
                 })

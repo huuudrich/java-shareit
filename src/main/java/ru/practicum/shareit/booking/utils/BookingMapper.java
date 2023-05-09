@@ -1,26 +1,24 @@
-package ru.practicum.shareit.booking.dto;
+package ru.practicum.shareit.booking.utils;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.dto.ItemDetailsDto;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.repository.ItemRepository;
 
 
 @Component
 @AllArgsConstructor
 public class BookingMapper {
-    private final ItemRepository itemRepository;
 
-    public Booking toBooking(BookingDto bookingDto) {
-        Item item = itemRepository.getReferenceById(bookingDto.getItemId());
+    public static Booking toBooking(BookingDto bookingDto, Item item) {
         return Booking.builder()
                 .id(bookingDto.getId())
                 .booker(bookingDto.getBooker())
-                .item(item)
                 .end(bookingDto.getEnd())
                 .start(bookingDto.getStart())
+                .item(item)
                 .status(bookingDto.getStatus())
                 .build();
     }
