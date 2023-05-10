@@ -13,10 +13,7 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.booking.utils.StatusBooking;
 import ru.practicum.shareit.exceptions.NotValidCommentException;
-import ru.practicum.shareit.item.dto.CommentDto;
-import ru.practicum.shareit.item.dto.CommentRequest;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemWithRequest;
+import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
@@ -29,8 +26,10 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.service.UserServiceImpl;
 
+import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -252,6 +251,70 @@ public class ItemServiceTest {
 
         assertTrue(result.isEmpty());
         verify(itemRepository, times(0)).search(anyString(), any(Pageable.class));
+    }
+
+    @Test
+    void getItem_UserExists_ItemExists_ReturnsItem() {
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(owner));
+        Long itemId = item.getId();
+        Long userId = owner.getId();
+        when(userRepository.existsById(anyLong())).thenReturn(true);
+
+        ItemDto result = itemService.getItem(itemId, userId);
+
+        assertEquals(itemId, result.getId());
+        verify(itemRepository, times(1)).findById(anyLong());
+        verify(userRepository, times(1)).existsById(anyLong());
+    }
+
+    @Test
+    void getItem_UserDoesNotExist_ThrowsEntityNotFoundException() {
+        Long itemId = item.getId();
+        Long userId = item.getOwner().getId();
+
+        assertThrows(EntityNotFoundException.class, () -> itemService.getItem(itemId, userId));
+        verify(userRepository, times(1)).existsById(anyLong());
+        verify(itemRepository, times(0)).findById(anyLong());
+    }
+
+    @Test
+    void getAllItemsWithUser_UserExists_ItemsExist_ReturnsItems() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Long userId = item.getOwner().getId();
+        List<Item> items = Collections.singletonList(item);
+
+        when(itemRepository.findByOwnerIdOrderByIdAsc(anyLong(), any())).thenReturn(new PageImpl<>(items));
+        when(commentRepository.findAllByItem_Id(anyLong())).thenReturn(new ArrayList<>());
+
+        List<ItemDetailsDto> result = itemService.getAllItemsWithUser(userId, pageable);
+
+        assertEquals(1, result.size());
+        verify(itemRepository, times(1)).findByOwnerIdOrderByIdAsc(anyLong(), any());
+        verify(commentRepository, times(1)).findAllByItem_Id(anyLong());
+    }
+
+    @Test
+    void getItemDetails_ItemExists_UserExists_ReturnsItemDetails() {
+        Long itemId = 1L;
+        Long userId = 1L;
+
+        Item item = new Item();
+        item.setId(itemId);
+        User user = new User();
+        user.setId(userId);
+        List<Comment> comments = new ArrayList<>();
+
+        when(itemRepository.getReferenceById(itemId)).thenReturn(item);
+        when(userRepository.getReferenceById(userId)).thenReturn(user);
+        when(commentRepository.findAllByItem_Id(itemId)).thenReturn(comments);
+
+        Object result = itemService.getItemDetails(itemId, userId);
+
+        assertNotNull(result);
+        verify(itemRepository, times(1)).getReferenceById(itemId);
+        verify(userRepository, times(1)).getReferenceById(userId);
+        verify(commentRepository, times(1)).findAllByItem_Id(itemId);
     }
 }
 
