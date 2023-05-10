@@ -29,8 +29,6 @@ public class UserServiceImpl implements UserService {
     public UserDto updateUser(Long userId, User user) {
         log.info("Updating user with id: {}", userId);
 
-        isExistingUser(userId);
-
         User existingUser = toUser(getUser(userId));
 
         if (user.getEmail() != null) {

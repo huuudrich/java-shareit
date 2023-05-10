@@ -39,24 +39,24 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional
     @Override
-    public Booking createBooking(BookingDto bookingDto, Long userId) throws AccessDeniedException {
-        log.info("Adding booking with id: {} for user with id: {}", bookingDto.getId(), userId);
+    public Booking createBooking(BookingDto bookingDto, Long bookerId) throws AccessDeniedException {
+        log.info("Adding booking with id: {} for user with id: {}", bookingDto.getId(), bookerId);
 
-        User user = toUser(userService.getUser(userId));
+        User booker = toUser(userService.getUser(bookerId));
 
         Item itemModelRepository = itemRepository.getReferenceById(bookingDto.getItemId());
 
         Booking booking = toBooking(bookingDto, itemModelRepository);
 
         Long itemId = bookingDto.getItemId();
-        Item item = toItem(itemService.getItem(itemId, userId));
+        Item item = toItem(itemService.getItem(itemId, bookerId));
         Long ownerId = item.getOwner().getId();
 
-        if (Objects.equals(ownerId, userId)) {
+        if (Objects.equals(ownerId, bookerId)) {
             throw new AccessDeniedException("Cannot be created with the same id");
         }
         if (item.getAvailable()) {
-            booking.setBooker(user);
+            booking.setBooker(booker);
             booking.setItem(item);
             booking.setStatus(StatusBooking.WAITING);
             return bookingRepository.save(booking);
@@ -64,7 +64,6 @@ public class BookingServiceImpl implements BookingService {
         throw new ItemNotAvailableException(format("Status item id %d is false", itemId));
     }
 
-    @Override
     public Booking setStatusForBookingByOwner(Long bookingId, Long userId, Boolean status) throws AccessDeniedException {
         log.info("Setting status for booking with id: {} by user with id: {}", bookingId, userId);
 
@@ -91,7 +90,6 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    @Override
     public Booking getBookingByIdForUserOrOwner(Long bookingId, Long bookerIdOrOwnerId) {
         log.info("Getting booking with id: {} for user or owner with id: {}", bookingId, bookerIdOrOwnerId);
         String notFoundText = format("Booking with id %d not found for user with id %d ", bookingId, bookerIdOrOwnerId);
@@ -99,7 +97,6 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new EntityNotFoundException(notFoundText));
     }
 
-    @Override
     public List<Booking> getAllBookings(Long userId, BookingState state, boolean isOwner, Pageable pageable) {
         log.info("Getting all bookings by {} with id: {} and state: {}", isOwner ? "owner" : "booker", userId, state);
 

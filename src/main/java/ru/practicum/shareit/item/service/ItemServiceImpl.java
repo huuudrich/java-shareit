@@ -71,8 +71,8 @@ public class ItemServiceImpl implements ItemService {
         return toItemWithRequest(itemRepository.save(item), request);
     }
 
-    public CommentDto addComment(Long itemId, Long userId, CommentRequest request) {
-        String text = request.getText();
+    public CommentDto addComment(Long itemId, Long userId, CommentRequest textRequest) {
+        String text = textRequest.getText();
         List<Booking> bookings = bookingRepository.findAllByBookerAndItemId(userId, itemId);
         if (bookings.isEmpty()) {
             throw new NotValidCommentException(String.format("Error for added comment with user id: %d ", userId));
@@ -149,7 +149,7 @@ public class ItemServiceImpl implements ItemService {
         Booking nextBooking = bookingRepository.findNextBooking(owner.getId(), item.getId(), now)
                 .stream().findFirst().orElse(null);
 
-        return toitemDetailsDto(item,
+        return toItemDetailsDto(item,
                 BookingMapper.bookingInItemDto(lastBooking),
                 BookingMapper.bookingInItemDto(nextBooking), comments);
     }

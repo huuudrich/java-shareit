@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.Matchers;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +20,8 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.mockito.Mockito.*;
 
@@ -55,7 +58,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void createUser_whenUserEmailNotValid() throws Exception {
+    public void when_createUser_Email_NotValid() throws Exception {
         User user = new User();
         user.setEmail("testexample.com");
         user.setName("Test User");
@@ -73,7 +76,25 @@ public class UserControllerTest {
     }
 
     @Test
-    public void createUser_whenUserNameEmptyNotValid() throws Exception {
+    public void when_createUser_UserEmail_IsEmpty() throws Exception {
+        User user = new User();
+        user.setEmail("");
+        user.setName("Test User");
+
+        UserDto userDto = new UserDto();
+        userDto.setEmail("");
+        userDto.setName("Test User");
+
+        Mockito.when(userService.createUser(Mockito.any(User.class))).thenReturn(userDto);
+
+        mockMvc.perform(MockMvcRequestBuilders.post(basePath)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(user)))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    public void when_createUser_UserName_IsEmpty() throws Exception {
         User user = new User();
         user.setEmail("test@example.com");
         user.setName("");
@@ -91,7 +112,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void createUser_whenDuplicateEmail_throwConstraintViolationException() throws Exception {
+    public void when_createUser_UserEmail_IsDuplicate() throws Exception {
         User user = new User();
         user.setEmail("test@example.com");
         user.setName("Test User");
@@ -122,7 +143,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void getUser_nonExistentUser() throws Exception {
+    public void when_getUser_NonExisted() throws Exception {
         Long userId = 1L;
 
         doThrow(EntityNotFoundException.class).when(userService).getUser(userId);
@@ -161,7 +182,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void deleteUser_nonExistentUser() throws Exception {
+    public void when_deleteUser_NonExisted() throws Exception {
         Long userId = 1L;
 
         doThrow(EntityNotFoundException.class).when(userService).deleteUser(userId);
@@ -170,5 +191,33 @@ public class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
 
         verify(userService, times(1)).deleteUser(userId);
+    }
+
+    @Test
+    public void getAllUsers() throws Exception {
+        UserDto userDto1 = new UserDto();
+        userDto1.setId(1L);
+        userDto1.setName("Test User 1");
+        userDto1.setEmail("test1@example.com");
+
+        UserDto userDto2 = new UserDto();
+        userDto2.setId(2L);
+        userDto2.setName("Test User 2");
+        userDto2.setEmail("test2@example.com");
+
+        List<UserDto> userDtoList = Arrays.asList(userDto1, userDto2);
+
+        Mockito.when(userService.getAllUsers()).thenReturn(userDtoList);
+
+        mockMvc.perform(MockMvcRequestBuilders.get(basePath)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(2)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value(1L))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].name").value("Test User 1"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].email").value("test1@example.com"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].id").value(2L))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].name").value("Test User 2"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].email").value("test2@example.com"));
     }
 }

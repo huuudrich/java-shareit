@@ -38,7 +38,7 @@ public class ItemMapper {
                 .build();
     }
 
-    public static ItemDetailsDto toitemDetailsDto(Item item, ItemDetailsDto.BookingInfo lastBooking,
+    public static ItemDetailsDto toItemDetailsDto(Item item, ItemDetailsDto.BookingInfo lastBooking,
                                                   ItemDetailsDto.BookingInfo nextBooking, List<Comment> comments) {
         return ItemDetailsDto.builder()
                 .id(item.getId())
