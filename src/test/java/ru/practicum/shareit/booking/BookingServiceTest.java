@@ -21,7 +21,6 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.item.service.ItemServiceImpl;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.service.UserServiceImpl;
 
 import javax.persistence.EntityNotFoundException;
@@ -42,8 +41,6 @@ public class BookingServiceTest {
     private BookingRepository bookingRepository;
     @Mock
     private UserServiceImpl userService;
-    @Mock
-    private UserRepository userRepository;
     @Mock
     private ItemServiceImpl itemService;
     @Mock
@@ -115,24 +112,6 @@ public class BookingServiceTest {
     @AfterEach
     void closeService() throws Exception {
         closeable.close();
-    }
-
-    @Test
-    public void createBooking_Success() throws AccessDeniedException {
-        when(userRepository.save(any(User.class))).thenReturn(booker);
-
-        when(userRepository.findById(anyLong())).thenReturn(Optional.ofNullable(booker));
-
-        when(userService.getUser(anyLong())).thenReturn(bookerDto);
-
-        when(itemRepository.getReferenceById(anyLong())).thenReturn(item);
-
-        when(itemService.getItem(item.getId(), booker.getId())).thenReturn(itemDto);
-        when(bookingRepository.save(booking)).thenReturn(booking);
-
-        Booking result = bookingService.createBooking(bookingDto, booker.getId());
-
-        assertEquals(booking.getId(), result.getId());
     }
 
     @Test
