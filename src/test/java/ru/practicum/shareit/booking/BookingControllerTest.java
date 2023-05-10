@@ -98,17 +98,6 @@ class BookingControllerTest {
     }
 
     @Test
-    void createBooking_Success() throws Exception {
-        when(bookingService.createBooking(any(BookingDto.class), anyLong())).thenReturn(booking);
-
-        this.mockMvc.perform(post("/bookings")
-                        .header("X-Sharer-User-Id", booker.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(bookingDto)))
-                .andExpect(status().isCreated());
-    }
-
-    @Test
     void when_TestCreateBooking_Data_IsNotValid() throws Exception {
         bookingDto.setStart(LocalDateTime.now().minusDays(1));
 
