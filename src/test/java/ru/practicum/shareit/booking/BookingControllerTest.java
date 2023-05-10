@@ -98,7 +98,7 @@ class BookingControllerTest {
     }
 
     @Test
-    void CreateBooking_Success() throws Exception {
+    void createBooking_Success() throws Exception {
         when(bookingService.createBooking(any(BookingDto.class), anyLong())).thenReturn(booking);
 
         this.mockMvc.perform(post("/bookings")
@@ -107,6 +107,7 @@ class BookingControllerTest {
                         .content(objectMapper.writeValueAsString(bookingDto)))
                 .andExpect(status().isCreated());
     }
+
     @Test
     void when_TestCreateBooking_Data_IsNotValid() throws Exception {
         bookingDto.setStart(LocalDateTime.now().minusDays(1));
@@ -119,8 +120,9 @@ class BookingControllerTest {
                         .content(objectMapper.writeValueAsString(bookingDto)))
                 .andExpect(status().isBadRequest());
     }
+
     @Test
-    void SetStatusByOwner_Success() throws Exception {
+    void setStatusByOwner_Success() throws Exception {
         when(bookingService.setStatusForBookingByOwner(anyLong(), anyLong(), anyBoolean())).thenReturn(booking);
 
         this.mockMvc.perform(patch("/bookings/1")
@@ -130,7 +132,7 @@ class BookingControllerTest {
     }
 
     @Test
-    void GetBookingWithOwnerOrBooker_Success() throws Exception {
+    void getBookingWithOwnerOrBooker_Success() throws Exception {
         when(bookingService.getBookingByIdForUserOrOwner(anyLong(), anyLong())).thenReturn(booking);
 
         this.mockMvc.perform(get("/bookings/1")
@@ -139,7 +141,7 @@ class BookingControllerTest {
     }
 
     @Test
-    void GetAllBookingsWithBooker_Success() throws Exception {
+    void getAllBookingsWithBooker_Success() throws Exception {
         List<Booking> bookings = new ArrayList<>();
 
         when(bookingService.getAllBookings(anyLong(), any(BookingState.class), anyBoolean(), any(Pageable.class))).thenReturn(bookings);
@@ -153,7 +155,7 @@ class BookingControllerTest {
     }
 
     @Test
-    void GetAllBookingsWithOwner_Success() throws Exception {
+    void getAllBookingsWithOwner_Success() throws Exception {
         List<Booking> bookings = new ArrayList<>();
 
         when(bookingService.getAllBookings(anyLong(), any(BookingState.class), anyBoolean(), any(Pageable.class))).thenReturn(bookings);
