@@ -210,4 +210,100 @@ public class BookingServiceTest {
         assertEquals(1, result.size());
         assertEquals(booking, result.get(0));
     }
+
+    @Test
+    public void getAllBookings_PastState_Owner() {
+        doNothing().when(userService).isExistingUser(any());
+        when(bookingRepository.findAllByItemOwnerIdAndEndBeforeAndStatusNotLike(anyLong(), any(LocalDateTime.class), any(StatusBooking.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+
+        List<Booking> result = bookingService.getAllBookings(1L, BookingState.PAST, true, Pageable.unpaged());
+
+        assertEquals(1, result.size());
+        assertEquals(booking, result.get(0));
+    }
+
+    @Test
+    public void getAllBookings_PastState_Booker() {
+        doNothing().when(userService).isExistingUser(any());
+        when(bookingRepository.findAllByBookerIdAndEndIsBeforeAndStatusNotLike(anyLong(), any(LocalDateTime.class), any(StatusBooking.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+
+        List<Booking> result = bookingService.getAllBookings(1L, BookingState.PAST, false, Pageable.unpaged());
+
+        assertEquals(1, result.size());
+        assertEquals(booking, result.get(0));
+    }
+
+    @Test
+    public void getAllBookings_WaitingState_Owner() {
+        doNothing().when(userService).isExistingUser(any());
+        when(bookingRepository.findAllByItemOwnerIdAndStatusIsLike(anyLong(), any(StatusBooking.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+
+        List<Booking> result = bookingService.getAllBookings(1L, BookingState.WAITING, true, Pageable.unpaged());
+
+        assertEquals(1, result.size());
+        assertEquals(booking, result.get(0));
+    }
+
+    @Test
+    public void getAllBookings_WaitingState_Booker() {
+        doNothing().when(userService).isExistingUser(any());
+        when(bookingRepository.findAllByBookerIdAndStatusIsLike(anyLong(), any(StatusBooking.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+
+        List<Booking> result = bookingService.getAllBookings(1L, BookingState.WAITING, false, Pageable.unpaged());
+
+        assertEquals(1, result.size());
+        assertEquals(booking, result.get(0));
+    }
+
+    @Test
+    public void getAllBookings_RejectedState_Owner() {
+        doNothing().when(userService).isExistingUser(any());
+        when(bookingRepository.findAllByItemOwnerIdAndStatusIsLike(anyLong(), any(StatusBooking.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+
+        List<Booking> result = bookingService.getAllBookings(1L, BookingState.REJECTED, true, Pageable.unpaged());
+
+        assertEquals(1, result.size());
+        assertEquals(booking, result.get(0));
+    }
+
+    @Test
+    public void getAllBookings_RejectedState_Booker() {
+        doNothing().when(userService).isExistingUser(any());
+        when(bookingRepository.findAllByBookerIdAndStatusIsLike(anyLong(), any(StatusBooking.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+
+        List<Booking> result = bookingService.getAllBookings(1L, BookingState.REJECTED, false, Pageable.unpaged());
+
+        assertEquals(1, result.size());
+        assertEquals(booking, result.get(0));
+    }
+
+    @Test
+    public void getAllBookings_AllState_Owner() {
+        doNothing().when(userService).isExistingUser(any());
+        when(bookingRepository.findAllByItemOwnerIdOrderByStartDesc(anyLong(), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+
+        List<Booking> result = bookingService.getAllBookings(1L, BookingState.ALL, true, Pageable.unpaged());
+
+        assertEquals(1, result.size());
+        assertEquals(booking, result.get(0));
+    }
+
+    @Test
+    public void getAllBookings_AllState_Booker() {
+        doNothing().when(userService).isExistingUser(any());
+        when(bookingRepository.findAllByBookerIdOrderByStartDesc(anyLong(), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+
+        List<Booking> result = bookingService.getAllBookings(1L, BookingState.ALL, false, Pageable.unpaged());
+
+        assertEquals(1, result.size());
+        assertEquals(booking, result.get(0));
+    }
 }
