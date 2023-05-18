@@ -10,6 +10,7 @@ import ru.practicum.shareit.user.model.User;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -30,6 +31,6 @@ public class ItemRequest {
     @JoinColumn(name = "requester_id")
     private User requester;
 
-    //@FutureOrPresent(message = "Created date must be in the future or present")
-    //private LocalDateTime created;
+    private LocalDateTime created;
+
 }

@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -33,12 +32,5 @@ public class User {
     @Email(message = "Invalid email format")
     @Column(name = "email", unique = true, nullable = false)
     private String email;
-
-    public static User toUser(UserDto userDto) {
-        return User.builder()
-                .id(userDto.getId())
-                .name(userDto.getName())
-                .email(userDto.getEmail()).build();
-    }
 }
 

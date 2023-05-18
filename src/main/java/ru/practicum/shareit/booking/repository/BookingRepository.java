@@ -1,11 +1,12 @@
 package ru.practicum.shareit.booking.repository;
 
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.model.StatusBooking;
+import ru.practicum.shareit.booking.utils.StatusBooking;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,43 +19,43 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     Optional<Booking> findByIdAndBookerIdOrOwnerId(Long bookingId, Long bookerIdOrOwnerId);
 
     //state = FUTURE
-    List<Booking> findAllByBookerIdAndStartAfter(Long bookerId, LocalDateTime now, Sort sort);
+    Page<Booking> findAllByBookerIdAndStartAfter(Long bookerId, LocalDateTime now, Pageable pageable);
 
     //state = PAST
-    List<Booking> findAllByBookerIdAndEndIsBeforeAndStatusNotLike(Long bookerId, LocalDateTime now, StatusBooking status, Sort sort);
+    Page<Booking> findAllByBookerIdAndEndIsBeforeAndStatusNotLike(Long bookerId, LocalDateTime now, StatusBooking status, Pageable pageable);
 
     //state = CURRENT
     @Query("select b from Booking b where b.booker.id = ?1 " +
             "and ?2 > b.start " +
             "and ?2 < b.end " +
             "order by b.start ASC")
-    List<Booking> findAllByBookerStateCurrent(Long bookerId, LocalDateTime now);
+    Page<Booking> findAllByBookerStateCurrent(Long bookerId, LocalDateTime now, Pageable pageable);
 
     //state = ALL
-    List<Booking> findAllByBookerIdOrderByStartDesc(Long bookerId);
+    Page<Booking> findAllByBookerIdOrderByStartDesc(Long bookerId, Pageable pageable);
 
     //state = WAITING , REJECTED
-    List<Booking> findAllByBookerIdAndStatusIsLike(Long bookerId, StatusBooking status, Sort sort);
+    Page<Booking> findAllByBookerIdAndStatusIsLike(Long bookerId, StatusBooking status, Pageable pageable);
 
     // OWNERS
     //state = FUTURE
-    List<Booking> findAllByItemOwnerIdAndStartAfter(Long ownerId, LocalDateTime now, Sort sort);
+    Page<Booking> findAllByItemOwnerIdAndStartAfter(Long ownerId, LocalDateTime now, Pageable pageable);
 
     //state = PAST
-    List<Booking> findAllByItemOwnerIdAndEndBeforeAndStatusNotLike(Long ownerId, LocalDateTime now, StatusBooking status, Sort sort);
+    Page<Booking> findAllByItemOwnerIdAndEndBeforeAndStatusNotLike(Long ownerId, LocalDateTime now, StatusBooking status, Pageable pageable);
 
     //state = CURRENT
     @Query("select b from Booking b where b.item.owner.id = ?1 " +
             "and ?2 > b.start " +
             "and ?2 < b.end " +
             "order by b.start ASC")
-    List<Booking> findAllByOwnerStateCurrent(Long ownerId, LocalDateTime now);
+    Page<Booking> findAllByOwnerStateCurrent(Long ownerId, LocalDateTime now, Pageable pageable);
 
     //state = ALL
-    List<Booking> findAllByItemOwnerIdOrderByStartDesc(Long ownerId);
+    Page<Booking> findAllByItemOwnerIdOrderByStartDesc(Long ownerId, Pageable pageable);
 
     //state = WAITING , REJECTED
-    List<Booking> findAllByItemOwnerIdAndStatusIsLike(Long ownerId, StatusBooking status, Sort sort);
+    Page<Booking> findAllByItemOwnerIdAndStatusIsLike(Long ownerId, StatusBooking status, Pageable pageable);
 
     @Query("select b from Booking b where b.booker.id = ?1 " +
             "and b.item.id = ?2 and b.status != 'REJECTED'")

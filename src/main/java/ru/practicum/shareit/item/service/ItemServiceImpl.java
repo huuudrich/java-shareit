@@ -2,28 +2,35 @@ package ru.practicum.shareit.item.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.booking.utils.BookingMapper;
 import ru.practicum.shareit.exceptions.NotValidCommentException;
-import ru.practicum.shareit.item.dto.CommentDto;
-import ru.practicum.shareit.item.dto.ItemDetailsDto;
-import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.item.utils.CommentRequest;
 import ru.practicum.shareit.item.utils.ItemMapper;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.repository.RequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.user.service.UserService;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static ru.practicum.shareit.item.utils.CommentMapper.toCommentDto;
+import static ru.practicum.shareit.item.utils.ItemMapper.*;
+import static ru.practicum.shareit.request.dto.ItemRequestDto.toItemRequestDto;
+import static ru.practicum.shareit.user.utils.UserMapper.toUser;
 
 @Service
 @AllArgsConstructor
@@ -31,19 +38,41 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final UserService userService;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final RequestRepository requestRepository;
 
-    public ItemDto addItem(Item item, Long userId) {
+    public Object addItem(ItemWithRequest itemWithRequest, Long userId) {
+
+        ItemRequest request = null;
+        List<ItemWithRequest> items = new ArrayList<>();
+
+        if (itemWithRequest.getRequestId() != null) {
+            Optional<ItemRequest> optionalRequest = requestRepository.findById(itemWithRequest.getRequestId());
+
+            if (optionalRequest.isPresent()) {
+                request = optionalRequest.get();
+                items.add(itemWithRequest);
+                toItemRequestDto(request).setItems(items);
+            }
+        }
+
+        Item item = itemWithRequestToItem(itemWithRequest, request);
+
         log.info("Adding item with name: {} for user with id: {}", item.getName(), userId);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
+
+        User user = toUser(userService.getUser(userId));
         item.setOwner(user);
-        return ItemMapper.toItemDto(itemRepository.save(item));
+
+        if (request == null) {
+            return ItemMapper.toItemDto(itemRepository.save(item));
+        }
+        return toItemWithRequest(itemRepository.save(item), request);
     }
 
-    public CommentDto addComment(Long itemId, Long userId, CommentRequest request) {
-        String text = request.getText();
+    public CommentDto addComment(Long itemId, Long userId, CommentRequest textRequest) {
+        String text = textRequest.getText();
         List<Booking> bookings = bookingRepository.findAllByBookerAndItemId(userId, itemId);
         if (bookings.isEmpty()) {
             throw new NotValidCommentException(String.format("Error for added comment with user id: %d ", userId));
@@ -56,7 +85,7 @@ public class ItemServiceImpl implements ItemService {
         User author = userRepository.getReferenceById(userId);
         Comment comment = new Comment(text, item, author, LocalDateTime.now());
         commentRepository.save(comment);
-        return CommentDto.toCommentDto(comment);
+        return toCommentDto(comment);
     }
 
     public ItemDto updateItem(Long itemId, Item item, Long userId) {
@@ -86,22 +115,22 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new EntityNotFoundException("Item with id " + itemId + " not found for user with id " + userId)));
     }
 
-    public List<ItemDetailsDto> getAllItemsWithUser(Long userId) {
+    public List<ItemDetailsDto> getAllItemsWithUser(Long userId, Pageable pageable) {
         log.info("Getting all items for user with id: {}", userId);
 
-        List<Item> items = itemRepository.findByOwnerIdOrderByIdAsc(userId);
+        List<Item> items = itemRepository.findByOwnerIdOrderByIdAsc(userId, pageable).getContent();
 
         return items.stream()
                 .map(item -> constructItemDtoForOwner(item.getOwner(), item, commentRepository.findAllByItem_Id(item.getId())))
                 .collect(Collectors.toList());
     }
 
-    public List<ItemDto> searchItem(String text) {
+    public List<ItemDto> searchItem(String text, Pageable pageable) {
         log.info("Searching items with text: {}", text);
         if (text.trim().isEmpty()) {
             return new ArrayList<>();
         }
-        return ItemMapper.userListToDto(itemRepository.search(text));
+        return toItemListDto(itemRepository.search(text, pageable).getContent());
     }
 
     public Object getItemDetails(Long itemId, Long userId) {
@@ -119,7 +148,8 @@ public class ItemServiceImpl implements ItemService {
                 .stream().findFirst().orElse(null);
         Booking nextBooking = bookingRepository.findNextBooking(owner.getId(), item.getId(), now)
                 .stream().findFirst().orElse(null);
-        return ItemMapper.itemDetailsDto(item,
+
+        return toItemDetailsDto(item,
                 BookingMapper.bookingInItemDto(lastBooking),
                 BookingMapper.bookingInItemDto(nextBooking), comments);
     }
