@@ -47,6 +47,9 @@ class BookingControllerTest {
     private BookingDto bookingDto;
     private Booking booking;
 
+    private final static String baseUrl = "/bookings";
+    private final static String xSharerUserId = "X-Sharer-User-Id";
+
     @BeforeEach
     public void setup() {
         booker = new User();
@@ -103,8 +106,8 @@ class BookingControllerTest {
 
         when(bookingService.createBooking(any(BookingDto.class), anyLong())).thenReturn(booking);
 
-        this.mockMvc.perform(post("/bookings")
-                        .header("X-Sharer-User-Id", booker.getId())
+        this.mockMvc.perform(post(baseUrl)
+                        .header(xSharerUserId, booker.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(bookingDto)))
                 .andExpect(status().isBadRequest());
@@ -114,8 +117,8 @@ class BookingControllerTest {
     void setStatusByOwner_Success() throws Exception {
         when(bookingService.setStatusForBookingByOwner(anyLong(), anyLong(), anyBoolean())).thenReturn(booking);
 
-        this.mockMvc.perform(patch("/bookings/1")
-                        .header("X-Sharer-User-Id", 1)
+        this.mockMvc.perform(patch(baseUrl + "/1")
+                        .header(xSharerUserId, 1)
                         .param("approved", "true"))
                 .andExpect(status().isOk());
     }
@@ -124,8 +127,8 @@ class BookingControllerTest {
     void getBookingWithOwnerOrBooker_Success() throws Exception {
         when(bookingService.getBookingByIdForUserOrOwner(anyLong(), anyLong())).thenReturn(booking);
 
-        this.mockMvc.perform(get("/bookings/1")
-                        .header("X-Sharer-User-Id", 1))
+        this.mockMvc.perform(get(baseUrl + "/1")
+                        .header(xSharerUserId, 1))
                 .andExpect(status().isOk());
     }
 
@@ -135,8 +138,8 @@ class BookingControllerTest {
 
         when(bookingService.getAllBookings(anyLong(), any(BookingState.class), anyBoolean(), any(Pageable.class))).thenReturn(bookings);
 
-        this.mockMvc.perform(get("/bookings")
-                        .header("X-Sharer-User-Id", 1)
+        this.mockMvc.perform(get(baseUrl)
+                        .header(xSharerUserId, 1)
                         .param("state", "ALL")
                         .param("from", "0")
                         .param("size", "10"))
@@ -149,8 +152,8 @@ class BookingControllerTest {
 
         when(bookingService.getAllBookings(anyLong(), any(BookingState.class), anyBoolean(), any(Pageable.class))).thenReturn(bookings);
 
-        this.mockMvc.perform(get("/bookings/owner")
-                        .header("X-Sharer-User-Id", 1)
+        this.mockMvc.perform(get(baseUrl + "/owner")
+                        .header(xSharerUserId, 1)
                         .param("state", "ALL")
                         .param("from", "0")
                         .param("size", "10"))

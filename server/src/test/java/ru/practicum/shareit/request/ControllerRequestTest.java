@@ -40,6 +40,8 @@ public class ControllerRequestTest {
     private ItemRequest itemRequest;
     private ItemRequestDto itemRequestDto;
     private Long userId;
+    private final static String baseUrl = "/requests";
+    private final static String xSharerUserId = "X-Sharer-User-Id";
 
     @BeforeEach
     public void setUp() {
@@ -57,10 +59,10 @@ public class ControllerRequestTest {
 
         when(requestService.createRequest(any(ItemRequest.class), anyLong())).thenReturn(itemRequestDto);
 
-        mockMvc.perform(post("/requests")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", userId)
-                        .content(inputJson))
+        mockMvc.perform(post(baseUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(xSharerUserId, userId)
+                .content(inputJson))
                 .andExpect(status().isCreated())
                 .andExpect(content().json(outputJson));
 
@@ -73,8 +75,8 @@ public class ControllerRequestTest {
 
         when(requestService.getAllRequests(anyLong())).thenReturn(requests);
 
-        mockMvc.perform(get("/requests")
-                        .header("X-Sharer-User-Id", userId))
+        mockMvc.perform(get(baseUrl)
+                        .header(xSharerUserId, userId))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(requests)));
 
@@ -87,8 +89,8 @@ public class ControllerRequestTest {
 
         when(requestService.getRequest(anyLong(), anyLong())).thenReturn(itemRequestDto);
 
-        mockMvc.perform(get("/requests/" + requestId)
-                        .header("X-Sharer-User-Id", userId))
+        mockMvc.perform(get(baseUrl + "/" + requestId)
+                        .header(xSharerUserId, userId))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(itemRequestDto)));
 
@@ -103,8 +105,8 @@ public class ControllerRequestTest {
 
         when(requestService.getAllRequestsPagination(anyLong(), any(Pageable.class))).thenReturn(requests);
 
-        mockMvc.perform(get("/requests/all")
-                        .header("X-Sharer-User-Id", userId)
+        mockMvc.perform(get(baseUrl + "/all")
+                        .header(xSharerUserId, userId)
                         .param("from", String.valueOf(from))
                         .param("size", String.valueOf(size)))
                 .andExpect(status().isOk())

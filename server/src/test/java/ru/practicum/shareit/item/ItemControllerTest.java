@@ -49,6 +49,8 @@ public class ItemControllerTest {
     private User booker;
     private ItemRequest request;
     private Comment comment;
+    private final static String baseUrl = "/items";
+    private final static String xSharerUserId = "X-Sharer-User-Id";
 
     @BeforeEach
     public void setup() {
@@ -102,9 +104,9 @@ public class ItemControllerTest {
 
         when(itemService.addItem(any(ItemWithRequest.class), anyLong())).thenReturn(itemDto);
 
-        mockMvc.perform(post("/items")
+        mockMvc.perform(post(baseUrl)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", userId)
+                        .header(xSharerUserId, userId)
                         .content(inputJson))
                 .andExpect(status().isCreated())
                 .andExpect(content().json(outputJson));
@@ -122,9 +124,9 @@ public class ItemControllerTest {
 
         when(itemService.updateItem(anyLong(), any(Item.class), anyLong())).thenReturn(itemDto);
 
-        mockMvc.perform(patch("/items/" + itemId)
+        mockMvc.perform(patch(baseUrl + "/" + itemId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", userId)
+                        .header(xSharerUserId, userId)
                         .content(inputJson))
                 .andExpect(status().isOk())
                 .andExpect(content().json(outputJson));
@@ -154,8 +156,8 @@ public class ItemControllerTest {
 
         when(itemService.getItemDetails(anyLong(), anyLong())).thenReturn(itemDetailsDto);
 
-        mockMvc.perform(get("/items/" + itemId)
-                        .header("X-Sharer-User-Id", userId))
+        mockMvc.perform(get(baseUrl + "/" + itemId)
+                        .header(xSharerUserId, userId))
                 .andExpect(status().isOk())
                 .andExpect(content().json(outputJson));
 
@@ -185,8 +187,8 @@ public class ItemControllerTest {
 
         when(itemService.getAllItemsWithUser(anyLong(), any(Pageable.class))).thenReturn(itemDetailsDtoList);
 
-        mockMvc.perform(get("/items")
-                        .header("X-Sharer-User-Id", userId)
+        mockMvc.perform(get(baseUrl)
+                        .header(xSharerUserId, userId)
                         .param("from", "0")
                         .param("size", "10"))
                 .andExpect(status().isOk())
@@ -204,7 +206,7 @@ public class ItemControllerTest {
 
         when(itemService.searchItem(anyString(), any(Pageable.class))).thenReturn(itemDtoList);
 
-        mockMvc.perform(get("/items/search")
+        mockMvc.perform(get(baseUrl + "/search")
                         .param("text", text)
                         .param("from", "0")
                         .param("size", "10"))
@@ -227,7 +229,7 @@ public class ItemControllerTest {
 
         when(itemService.addComment(anyLong(), anyLong(), any(CommentRequest.class))).thenReturn(commentDto);
 
-        mockMvc.perform(post("/items/" + itemId + "/comment")
+        mockMvc.perform(post(baseUrl + "/" + itemId + "/comment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("X-Sharer-User-Id", userId)
                         .content(inputJson))

@@ -37,6 +37,7 @@ public class UserControllerTest {
     private final String basePath = "/users";
 
 
+
     @Test
     public void createUser() throws Exception {
         User user = new User();
