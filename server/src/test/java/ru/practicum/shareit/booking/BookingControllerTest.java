@@ -47,8 +47,8 @@ class BookingControllerTest {
     private BookingDto bookingDto;
     private Booking booking;
 
-    private final static String baseUrl = "/bookings";
-    private final static String xSharerUserId = "X-Sharer-User-Id";
+    private final String baseUrl = "/bookings";
+    private final String xSharerUserId = "X-Sharer-User-Id";
 
     @BeforeEach
     public void setup() {

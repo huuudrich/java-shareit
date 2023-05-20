@@ -40,8 +40,8 @@ public class ControllerRequestTest {
     private ItemRequest itemRequest;
     private ItemRequestDto itemRequestDto;
     private Long userId;
-    private final static String baseUrl = "/requests";
-    private final static String xSharerUserId = "X-Sharer-User-Id";
+    private final String baseUrl = "/requests";
+    private final String xSharerUserId = "X-Sharer-User-Id";
 
     @BeforeEach
     public void setUp() {

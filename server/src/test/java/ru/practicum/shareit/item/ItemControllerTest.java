@@ -49,8 +49,8 @@ public class ItemControllerTest {
     private User booker;
     private ItemRequest request;
     private Comment comment;
-    private final static String baseUrl = "/items";
-    private final static String xSharerUserId = "X-Sharer-User-Id";
+    private final String baseUrl = "/items";
+    private final String xSharerUserId = "X-Sharer-User-Id";
 
     @BeforeEach
     public void setup() {
