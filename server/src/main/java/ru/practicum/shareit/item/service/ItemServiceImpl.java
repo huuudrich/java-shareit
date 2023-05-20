@@ -13,7 +13,6 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.item.utils.ItemMapper;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.RequestRepository;
 import ru.practicum.shareit.user.model.User;
@@ -66,7 +65,7 @@ public class ItemServiceImpl implements ItemService {
         item.setOwner(user);
 
         if (request == null) {
-            return ItemMapper.toItemDto(itemRepository.save(item));
+            return toItemDto(itemRepository.save(item));
         }
         return toItemWithRequest(itemRepository.save(item), request);
     }
@@ -103,7 +102,7 @@ public class ItemServiceImpl implements ItemService {
             existingItem.setAvailable(item.getAvailable());
         }
 
-        return ItemMapper.toItemDto(itemRepository.save(existingItem));
+        return toItemDto(itemRepository.save(existingItem));
     }
 
     public ItemDto getItem(Long itemId, Long userId) {
@@ -111,7 +110,7 @@ public class ItemServiceImpl implements ItemService {
         if (!userRepository.existsById(userId)) {
             throw new EntityNotFoundException(String.format("User with id %d not found", userId));
         }
-        return ItemMapper.toItemDto(itemRepository.findById(itemId)
+        return toItemDto(itemRepository.findById(itemId)
                 .orElseThrow(() -> new EntityNotFoundException("Item with id " + itemId + " not found for user with id " + userId)));
     }
 

@@ -64,7 +64,7 @@ public class ItemController {
     }
 
     @PostMapping("{itemId}/comment")
-    public ResponseEntity<CommentDto> getComments(@PathVariable @Positive Long itemId, @Positive @RequestHeader(xSharerUserId) Long userId,
+    public ResponseEntity<CommentDto> addComments(@PathVariable @Positive Long itemId, @Positive @RequestHeader(xSharerUserId) Long userId,
                                                   @Valid @RequestBody CommentRequest text) throws Exception {
         CommentDto comment = itemService.addComment(itemId, userId, text);
         return ResponseEntity.status(HttpStatus.OK).body(comment);
