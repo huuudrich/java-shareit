@@ -8,6 +8,9 @@ services:
       - "8080:8080"
     depends_on:
       - db
+      - server
+    environment:
+      - SHAREIT-SERVER_URL=http://server:9090
 
   server:
     build: ./server
@@ -17,8 +20,7 @@ services:
       - "9090:9090"
     depends_on:
       - db
-    environment:
-      - SHAREIT_SERVER_URL=http://server:9090
+
 
   db:
     image: postgres
